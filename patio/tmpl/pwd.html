@@ -1,0 +1,23 @@
+<div class="form-container" style="max-width:400px; margin:2rem auto;">
+  <h2 class="topic-header mb-1">&#128274; パスワード確認</h2>
+  <p class="mb-1">記事の編集・削除にはパスワードが必要です。</p>
+
+  <form action="<!-- var:cgi_url -->" method="post">
+    <input type="hidden" name="mode" value="edit">
+    <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
+    <input type="hidden" name="seq" value="<!-- raw:seq -->">
+    <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+
+    <div class="bbsform">
+      <div class="form-group">
+        <label>パスワード</label>
+        <input type="password" name="pwd" required autofocus>
+      </div>
+    </div>
+
+    <div class="submit-btn-area">
+      <input type="submit" value="確認" class="btn-secondary">
+      <button type="button" onclick="history.back()" class="btn-outline">戻る</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>表示設定 - <!-- var:bbs_title --></title>
+<link href="./cmn/admin.css" rel="stylesheet">
+</head>
+<body>
+<header class="admin-header">
+  <h1><a href="<!-- var:admin_url -->?action=menu"><!-- var:bbs_title --> 管理画面</a></h1>
+  <div class="admin-header-actions">
+    <a href="<!-- var:admin_url -->?action=menu">&#8617; メニュー</a>
+    <a href="<!-- var:admin_url -->?action=logout">ログアウト</a>
+  </div>
+</header>
+<div class="admin-main">
+  <div class="admin-card">
+    <h2>&#9881; 表示設定</h2>
+
+    <!-- if:message -->
+    <div class="admin-alert admin-alert-success"><!-- var:message --></div>
+    <!-- /if:message -->
+
+    <form action="<!-- var:admin_url -->" method="post" class="admin-form">
+      <input type="hidden" name="action" value="settings_exec">
+      <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+
+      <div class="form-group">
+        <label>掲示板タイトル</label>
+        <input type="text" name="bbs_title" value="<!-- var:bbs_title -->">
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-md);">
+        <div class="form-group">
+          <label>現行ログ最大スレッド数</label>
+          <input type="number" name="i_max" value="<!-- var:i_max -->">
+        </div>
+        <div class="form-group">
+          <label>過去ログ最大スレッド数</label>
+          <input type="number" name="p_max" value="<!-- var:p_max -->">
+        </div>
+        <div class="form-group">
+          <label>1スレッド最大記事数</label>
+          <input type="number" name="m_max" value="<!-- var:m_max -->">
+        </div>
+        <div class="form-group">
+          <label>1ページの表示件数</label>
+          <input type="number" name="pg_max" value="<!-- var:pg_max -->">
+        </div>
+        <div class="form-group">
+          <label>現行ログ 1ページの件数</label>
+          <input type="number" name="pgmax_now" value="<!-- var:pgmax_now -->">
+        </div>
+        <div class="form-group">
+          <label>過去ログ 1ページの件数</label>
+          <input type="number" name="pgmax_past" value="<!-- var:pgmax_past -->">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>会員認証</label>
+        <select name="authkey">
+          <option value="0"<!-- if:authkey_off --> selected<!-- /if:authkey_off -->>不要（オープン）</option>
+          <option value="1"<!-- if:authkey_on --> selected<!-- /if:authkey_on -->>必要（会員制）</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>画像アップロード</label>
+        <select name="image_upl">
+          <option value="0"<!-- if:image_upl_off --> selected<!-- /if:image_upl_off -->>無効</option>
+          <option value="1"<!-- if:image_upl_on --> selected<!-- /if:image_upl_on -->>有効</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>連続投稿待機時間（秒）</label>
+        <input type="number" name="wait" value="<!-- var:wait -->">
+      </div>
+
+      <div style="text-align:center; margin-top:var(--sp-lg);">
+        <button type="submit" class="btn-admin btn-admin-primary">設定を保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="admin-footer"><p>LetterBBS ver2 Administration</p></div>
+</body>
+</html>

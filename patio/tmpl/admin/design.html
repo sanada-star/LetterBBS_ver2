@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>テーマ設定 - <!-- var:bbs_title --></title>
+<link href="./cmn/admin.css" rel="stylesheet">
+</head>
+<body>
+<header class="admin-header">
+  <h1><a href="<!-- var:admin_url -->?action=menu"><!-- var:bbs_title --> 管理画面</a></h1>
+  <div class="admin-header-actions">
+    <a href="<!-- var:admin_url -->?action=menu">&#8617; メニュー</a>
+    <a href="<!-- var:admin_url -->?action=logout">ログアウト</a>
+  </div>
+</header>
+<div class="admin-main">
+  <div class="admin-card">
+    <h2>&#127912; テーマ設定</h2>
+
+    <!-- if:message -->
+    <div class="admin-alert admin-alert-success"><!-- var:message --></div>
+    <!-- /if:message -->
+
+    <form action="<!-- var:admin_url -->" method="post" class="admin-form">
+      <input type="hidden" name="action" value="design_exec">
+      <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+
+      <div class="form-group">
+        <label>テーマを選択</label>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:var(--sp-md); margin-top:var(--sp-sm);">
+          <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
+            <input type="radio" name="theme" value="standard"<!-- if:theme_standard --> checked<!-- /if:theme_standard -->>
+            <div>
+              <strong>Pop</strong>
+              <div style="font-size:0.8rem; color:var(--c-text-sub);">温かみのあるデフォルトテーマ</div>
+            </div>
+          </label>
+          <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
+            <input type="radio" name="theme" value="gloomy"<!-- if:theme_gloomy --> checked<!-- /if:theme_gloomy -->>
+            <div>
+              <strong>Gloomy</strong>
+              <div style="font-size:0.8rem; color:var(--c-text-sub);">落ち着いたダークテーマ</div>
+            </div>
+          </label>
+          <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
+            <input type="radio" name="theme" value="simple"<!-- if:theme_simple --> checked<!-- /if:theme_simple -->>
+            <div>
+              <strong>Simple</strong>
+              <div style="font-size:0.8rem; color:var(--c-text-sub);">シンプルで軽い読みやすさ重視</div>
+            </div>
+          </label>
+          <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
+            <input type="radio" name="theme" value="fox"<!-- if:theme_fox --> checked<!-- /if:theme_fox -->>
+            <div>
+              <strong>Fox</strong>
+              <div style="font-size:0.8rem; color:var(--c-text-sub);">狐をモチーフにした和テーマ</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:var(--sp-lg);">
+        <button type="submit" class="btn-admin btn-admin-primary">テーマを変更</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="admin-footer"><p>LetterBBS ver2 Administration</p></div>
+</body>
+</html>

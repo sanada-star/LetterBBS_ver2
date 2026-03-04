@@ -1,0 +1,59 @@
+@charset "UTF-8";
+/*
+ * LetterBBS ver2 — Gloomy テーマ（クール・黒と青）
+ * 黒と青を基調としたクールなデザイン
+ */
+
+@import url('style.css');
+
+:root {
+  /* カラーパレット (Cool: Black & Blue) */
+  --c-bg:         #0d1117;
+  --c-bg-warm:    #161b22;
+  --c-card:       #1c2128;
+  --c-text:       #c9d1d9;
+  --c-text-sub:   #8b949e;
+  --c-primary:    #58a6ff;
+  --c-primary-dk: #1f6feb;
+  --c-secondary:  #3fb950;
+  --c-accent:     #a371f7;
+  --c-border:     #30363d;
+  --c-border-lt:  #21262d;
+  --c-danger:     #f85149;
+  --c-info:       #388bfd;
+  --c-warn:       #d29922;
+
+  /* タイムライン */
+  --c-sent:       #0d2b3e;
+  --c-received:   #21262d;
+
+  /* フォント (Sleek sans-serif) */
+  --ff-body:  'Inter', 'Helvetica Neue', 'Arial', sans-serif;
+  
+  /* シャドウ (Dark mode) */
+  --sh-sm:  0 1px 3px rgba(0,0,0,0.4);
+  --sh-md:  0 3px 10px rgba(0,0,0,0.5);
+  --sh-lg:  0 8px 24px rgba(0,0,0,0.6);
+}
+
+/* クールなデザイン特有の調整 */
+#head {
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  border-bottom: 2px solid var(--c-primary);
+}
+
+.badge-new {
+  background: var(--c-primary);
+  color: #ffffff;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, var(--c-primary-dk), var(--c-primary));
+}
+
+a {
+  color: var(--c-primary);
+}
+a:hover {
+  text-decoration: underline;
+}

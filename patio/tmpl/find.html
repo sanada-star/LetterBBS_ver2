@@ -1,0 +1,53 @@
+<div class="form-container">
+  <h2 class="topic-header mb-1">&#128270; ワード検索</h2>
+
+  <form action="<!-- var:cgi_url -->" method="get">
+    <input type="hidden" name="mode" value="search">
+
+    <div class="bbsform">
+      <div class="form-group">
+        <label>キーワード</label>
+        <div style="display:flex; gap:0.5rem;">
+          <input type="text" name="keyword" value="<!-- var:keyword -->" style="flex:1;" placeholder="検索キーワードを入力">
+          <select name="mode" style="width:auto;">
+            <option value="AND"<!-- if:mode_and --> selected<!-- /if:mode_and -->>AND検索</option>
+            <option value="OR"<!-- if:mode_or --> selected<!-- /if:mode_or -->>OR検索</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="text-center mt-1">
+        <input type="submit" value="検索する" class="btn-secondary">
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- if:searched -->
+<p class="hit-msg text-center mb-1 fw-bold mt-2">
+  検索結果: <b><!-- var:result_count --></b>件ヒット
+</p>
+
+<!-- if:results -->
+<section class="topic-container">
+  <!-- loop:results -->
+  <article class="thread-card">
+    <div class="thread-content">
+      <a href="<!-- var:cgi_url -->?mode=read&id=<!-- var:thread_id -->#res<!-- var:seq_no -->" class="thread-title"><!-- var:subject --></a>
+      <div class="thread-info-line">
+        <span class="meta-from">From: <b><!-- var:author --></b></span>
+        <span class="meta-date"><!-- var:display_date --></span>
+      </div>
+      <p class="search-excerpt"><!-- var:body_excerpt --></p>
+    </div>
+  </article>
+  <!-- /loop:results -->
+</section>
+<!-- /if:results -->
+
+<!-- unless:results -->
+<!-- if:searched -->
+<p class="text-center mt-2">該当する記事が見つかりませんでした。</p>
+<!-- /if:searched -->
+<!-- /unless:results -->
+<!-- /if:searched -->

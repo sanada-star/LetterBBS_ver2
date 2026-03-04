@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>記事管理 - <!-- var:bbs_title --></title>
+<link href="./cmn/admin.css" rel="stylesheet">
+</head>
+<body>
+<header class="admin-header">
+  <h1><a href="<!-- var:admin_url -->?action=menu"><!-- var:bbs_title --> 管理画面</a></h1>
+  <div class="admin-header-actions">
+    <a href="<!-- var:admin_url -->?action=threads">&#8617; スレッド一覧</a>
+    <a href="<!-- var:admin_url -->?action=logout">ログアウト</a>
+  </div>
+</header>
+<div class="admin-main">
+  <div class="admin-card">
+    <h2>スレッド #<!-- var:thread_id -->: <!-- var:thread_subject --></h2>
+    <p style="font-size:0.85rem; color:var(--c-text-sub); margin-bottom:var(--sp-md);">
+      作成者: <!-- var:thread_author --> | 状態: <!-- var:status_label --> | 返信数: <!-- var:post_count -->
+    </p>
+
+    <!-- if:message -->
+    <div class="admin-alert admin-alert-success"><!-- var:message --></div>
+    <!-- /if:message -->
+
+    <form action="<!-- var:admin_url -->" method="post">
+      <input type="hidden" name="action" value="thread_exec">
+      <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
+      <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+
+      <div style="margin-bottom:var(--sp-md);">
+        <button type="submit" name="exec" value="delete_posts" class="btn-admin btn-admin-danger" onclick="return confirm('選択した記事を削除しますか？')">選択記事を削除</button>
+      </div>
+
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width:30px;"><input type="checkbox" id="selectAll"></th>
+            <th>#</th>
+            <th>投稿者</th>
+            <th>件名</th>
+            <th>本文（冒頭）</th>
+            <th>ホスト</th>
+            <th>投稿日</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- loop:posts -->
+          <tr<!-- if:is_deleted --> style="opacity:0.4;"<!-- /if:is_deleted -->>
+            <td><input type="checkbox" name="post_ids" value="<!-- var:id -->"></td>
+            <td><!-- var:seq_no --></td>
+            <td><!-- var:author --></td>
+            <td><!-- var:subject --></td>
+            <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><!-- var:body_excerpt --></td>
+            <td style="font-size:0.75rem;"><!-- var:host --></td>
+            <td><!-- var:display_date --></td>
+          </tr>
+          <!-- /loop:posts -->
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
+<div class="admin-footer"><p>LetterBBS ver2 Administration</p></div>
+<script>
+document.getElementById('selectAll').addEventListener('change', function() {
+  var boxes = document.querySelectorAll('input[name="post_ids"]');
+  for (var i = 0; i < boxes.length; i++) boxes[i].checked = this.checked;
+});
+</script>
+</body>
+</html>

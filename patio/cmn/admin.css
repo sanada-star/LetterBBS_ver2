@@ -1,0 +1,133 @@
+@charset "UTF-8";
+/*
+ * LetterBBS ver2 — 管理画面CSS
+ */
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+
+:root {
+  --c-bg: #f0f2f5;
+  --c-card: #ffffff;
+  --c-text: #1a1a2e;
+  --c-text-sub: #64748b;
+  --c-primary: #4f5d75;
+  --c-primary-dk: #3a4560;
+  --c-accent: #e07a5f;
+  --c-border: #e2e8f0;
+  --c-danger: #c0392b;
+  --c-success: #27ae60;
+  --ff-body: 'Zen Maru Gothic', sans-serif;
+  --sp-xs: 0.25rem; --sp-sm: 0.5rem; --sp-md: 1rem; --sp-lg: 1.5rem; --sp-xl: 2rem;
+  --r-sm: 4px; --r-md: 8px; --r-lg: 12px;
+  --sh-sm: 0 1px 3px rgba(0,0,0,0.06); --sh-md: 0 4px 12px rgba(0,0,0,0.08);
+  --max-w: 960px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; }
+body { font-family: var(--ff-body); color: var(--c-text); background: var(--c-bg); line-height: 1.7; min-height: 100vh; }
+a { color: var(--c-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ヘッダー */
+.admin-header {
+  background: var(--c-primary);
+  color: #fff;
+  padding: var(--sp-md) var(--sp-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.admin-header h1 { font-size: 1.1rem; font-weight: 700; }
+.admin-header h1 a { color: #fff; }
+.admin-header-actions a { color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-left: var(--sp-md); }
+.admin-header-actions a:hover { color: #fff; text-decoration: none; }
+
+/* メインコンテンツ */
+.admin-main { max-width: var(--max-w); margin: 0 auto; padding: var(--sp-lg) var(--sp-md); }
+
+/* カード */
+.admin-card {
+  background: var(--c-card);
+  border-radius: var(--r-lg);
+  padding: var(--sp-lg);
+  box-shadow: var(--sh-sm);
+  margin-bottom: var(--sp-md);
+}
+.admin-card h2 { font-size: 1.05rem; color: var(--c-primary); margin-bottom: var(--sp-md); }
+
+/* テーブル */
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.admin-table th { background: var(--c-bg); font-weight: 500; text-align: left; padding: var(--sp-sm) var(--sp-md); border-bottom: 1px solid var(--c-border); }
+.admin-table td { padding: var(--sp-sm) var(--sp-md); border-bottom: 1px solid var(--c-border); }
+.admin-table tr:hover td { background: #f8fafc; }
+
+/* メニューグリッド */
+.admin-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--sp-md);
+}
+.admin-menu-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-xl) var(--sp-md);
+  background: var(--c-card);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-sm);
+  color: var(--c-text);
+  transition: box-shadow .2s, transform .2s;
+  text-align: center;
+}
+.admin-menu-item:hover { box-shadow: var(--sh-md); transform: translateY(-2px); text-decoration: none; color: var(--c-text); }
+.admin-menu-item .icon { font-size: 2rem; }
+.admin-menu-item .label { font-weight: 500; font-size: 0.9rem; }
+
+/* フォーム */
+.admin-form .form-group { margin-bottom: var(--sp-md); }
+.admin-form label { display: block; font-size: 0.85rem; color: var(--c-text-sub); margin-bottom: var(--sp-xs); font-weight: 500; }
+.admin-form input[type="text"],
+.admin-form input[type="password"],
+.admin-form input[type="number"],
+.admin-form select,
+.admin-form textarea {
+  width: 100%; padding: var(--sp-sm) var(--sp-md); border: 1px solid var(--c-border);
+  border-radius: var(--r-md); font-size: 0.9rem; transition: border-color .15s;
+}
+.admin-form input:focus, .admin-form select:focus, .admin-form textarea:focus {
+  outline: none; border-color: var(--c-accent);
+}
+
+/* ボタン */
+.btn-admin { display: inline-block; padding: var(--sp-sm) var(--sp-lg); border: none; border-radius: var(--r-md); font-weight: 500; cursor: pointer; font-size: 0.85rem; transition: opacity .15s; }
+.btn-admin-primary { background: var(--c-accent); color: #fff; }
+.btn-admin-danger { background: var(--c-danger); color: #fff; }
+.btn-admin-outline { background: transparent; border: 1px solid var(--c-border); color: var(--c-text-sub); }
+.btn-admin:hover { opacity: 0.85; }
+
+/* ログインフォーム */
+.admin-login { max-width: 360px; margin: 3rem auto; }
+
+/* フッター */
+.admin-footer { text-align: center; padding: var(--sp-lg); font-size: 0.75rem; color: var(--c-text-sub); }
+
+/* チェックボックス */
+.admin-table input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+
+/* アラート */
+.admin-alert { padding: var(--sp-sm) var(--sp-md); border-radius: var(--r-md); font-size: 0.85rem; margin-bottom: var(--sp-md); }
+.admin-alert-success { background: #e8f6ef; color: #1a5632; }
+.admin-alert-error { background: #fdedec; color: var(--c-danger); }
+
+/* 容量バー */
+.size-bar { background: #e2e8f0; border-radius: var(--r-sm); height: 12px; overflow: hidden; margin-top: var(--sp-xs); }
+.size-bar-fill { background: var(--c-accent); height: 100%; border-radius: var(--r-sm); transition: width .3s; }
+
+/* レスポンシブ */
+@media (max-width: 600px) {
+  .admin-header { flex-direction: column; gap: var(--sp-sm); text-align: center; }
+  .admin-menu-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-table { font-size: 0.8rem; }
+  .admin-table th, .admin-table td { padding: var(--sp-xs) var(--sp-sm); }
+}

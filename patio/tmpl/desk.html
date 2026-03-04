@@ -1,0 +1,101 @@
+<div data-page="desk">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:var(--sp-md);">
+    <h2 class="topic-header">&#9993; 文通デスク</h2>
+    <div style="display:flex; gap:var(--sp-sm);">
+      <!-- if:drafts -->
+      <button onclick="LB.Desk.sendAllFromDesk()" class="btn-send-all">&#128640; 一括送信 (<!-- var:draft_count -->)</button>
+      <!-- /if:drafts -->
+    </div>
+  </div>
+
+  <!-- unless:drafts -->
+  <div class="form-container text-center" style="padding:var(--sp-2xl);">
+    <p style="font-size:2rem; margin-bottom:var(--sp-md);">&#128235;</p>
+    <p style="color:var(--c-text-sub);">下書きはありません。</p>
+    <p style="color:var(--c-text-sub); font-size:0.85rem; margin-top:var(--sp-sm);">
+      スレッド閲覧ページで「デスクに置く」を押すと、ここに下書きが追加されます。
+    </p>
+  </div>
+  <!-- /unless:drafts -->
+
+  <!-- if:drafts -->
+  <div class="desk-list">
+    <!-- loop:drafts -->
+    <div class="form-container mb-1">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--sp-sm);">
+        <div>
+          <strong><!-- var:thread_subject --></strong>
+          <div style="font-size:0.8rem; color:var(--c-text-sub);">
+            <!-- var:author --> &rarr; <!-- var:thread_author -->さん宛
+          </div>
+        </div>
+        <span style="font-size:0.75rem; color:var(--c-text-sub);"><!-- var:display_date --></span>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-md);">
+        <!-- タイムライン -->
+        <div>
+          <h4 style="font-size:0.85rem; color:var(--c-text-sub); margin-bottom:var(--sp-sm);">やり取り履歴</h4>
+          <div class="desk-timeline" data-timeline="<!-- raw:thread_id -->" data-my="<!-- var:author -->" data-partner="<!-- var:thread_author -->">
+            <p style="font-size:0.8rem; color:var(--c-text-sub); text-align:center;">読み込み中...</p>
+          </div>
+        </div>
+
+        <!-- 編集フォーム -->
+        <div>
+          <form class="desk-edit-form" data-draft-id="<!-- raw:draft_id -->">
+            <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
+            <div class="desk-field">
+              <label>名前</label>
+              <input type="text" name="author" value="<!-- var:author -->">
+            </div>
+            <div class="desk-field">
+              <label>件名</label>
+              <input type="text" name="subject" value="<!-- var:draft_subject -->">
+            </div>
+            <div class="desk-field">
+              <label>メッセージ</label>
+              <textarea name="body" rows="5" class="desk-textarea"><!-- var:draft_body --></textarea>
+            </div>
+            <div class="desk-actions">
+              <button type="button" onclick="LB.Desk.saveDraft(<!-- raw:draft_id -->)" class="btn-save-desk">保存</button>
+              <button type="button" onclick="LB.Desk.removeDraft(<!-- raw:draft_id -->)" class="btn-cancel-desk">削除</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- /loop:drafts -->
+  </div>
+
+  <!-- 一括送信フォーム -->
+  <div class="form-container mt-2">
+    <div style="display:flex; justify-content:center; align-items:center; gap:var(--sp-md);">
+      <div class="desk-field" style="margin:0;">
+        <label>パスワード（一括）</label>
+        <input type="password" id="desk-password" maxlength="8" placeholder="編集/削除用">
+      </div>
+      <button onclick="LB.Desk.sendAllFromDesk()" class="submit-btn">&#128640; 一括送信</button>
+    </div>
+  </div>
+  <!-- /if:drafts -->
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 各下書きのタイムラインを読み込む
+    var timelines = document.querySelectorAll('[data-timeline]');
+    timelines.forEach(function(el) {
+      var myName = el.getAttribute('data-my');
+      var partner = el.getAttribute('data-partner');
+      var threadId = el.getAttribute('data-timeline');
+      if (myName && partner) {
+        LetterBBS.API.getTimeline(myName, partner).then(function(data) {
+          LetterBBS.Timeline.renderInto(el, data.posts || []);
+        }).catch(function() {
+          el.innerHTML = '<p style="font-size:0.8rem; color:var(--c-text-sub); text-align:center;">履歴なし</p>';
+        });
+      }
+    });
+  });
+</script>

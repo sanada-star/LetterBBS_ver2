@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>容量確認 - <!-- var:bbs_title --></title>
+<link href="./cmn/admin.css" rel="stylesheet">
+</head>
+<body>
+<header class="admin-header">
+  <h1><a href="<!-- var:admin_url -->?action=menu"><!-- var:bbs_title --> 管理画面</a></h1>
+  <div class="admin-header-actions">
+    <a href="<!-- var:admin_url -->?action=menu">&#8617; メニュー</a>
+    <a href="<!-- var:admin_url -->?action=logout">ログアウト</a>
+  </div>
+</header>
+<div class="admin-main">
+  <div class="admin-card">
+    <h2>&#128202; 容量確認</h2>
+
+    <table class="admin-table" style="max-width:500px;">
+      <tbody>
+        <tr>
+          <td style="font-weight:500;">データベースファイル</td>
+          <td><!-- var:db_size --></td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">アップロード画像</td>
+          <td><!-- var:upl_size --></td>
+        </tr>
+        <tr>
+          <td style="font-weight:500;">合計</td>
+          <td><strong><!-- var:total_size --></strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin-top:var(--sp-lg);">
+      <h3 style="font-size:0.95rem; margin-bottom:var(--sp-sm);">データ件数</h3>
+      <table class="admin-table" style="max-width:500px;">
+        <tbody>
+          <tr>
+            <td style="font-weight:500;">現行スレッド数</td>
+            <td><!-- var:active_threads --></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500;">過去ログスレッド数</td>
+            <td><!-- var:archived_threads --></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500;">総投稿数</td>
+            <td><!-- var:total_posts --></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500;">登録会員数</td>
+            <td><!-- var:total_users --></td>
+          </tr>
+          <tr>
+            <td style="font-weight:500;">アップロード画像数</td>
+            <td><!-- var:total_images --></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:var(--sp-lg);">
+      <form action="<!-- var:admin_url -->" method="post" onsubmit="return confirm('データベースの最適化を実行しますか？');">
+        <input type="hidden" name="action" value="size_check">
+        <input type="hidden" name="exec" value="vacuum">
+        <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+        <button type="submit" class="btn-admin btn-admin-outline">データベースを最適化 (VACUUM)</button>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="admin-footer"><p>LetterBBS ver2 Administration</p></div>
+</body>
+</html>

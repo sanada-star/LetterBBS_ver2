@@ -1,0 +1,7 @@
+<FilesMatch "\.(cgi|pl|php|py|rb)$">
+    Deny from all
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

@@ -1,0 +1,195 @@
+<div class="bbs-navi">
+  <div>
+    <a href="<!-- var:cgi_url -->">&#8617; 一覧に戻る</a> |
+    <a href="#resform">&#9993; 返信する</a> |
+    <a href="<!-- var:cgi_url -->?mode=archive&id=<!-- raw:thread_id -->" target="_blank">&#128230; 思い出を保存</a>
+  </div>
+  <a href="#resform" class="jump-btn">&#9660; 最下部へ</a>
+</div>
+
+<!-- スレッド親記事 -->
+<!-- if:parent -->
+<article class="post starter">
+  <div class="art-head">
+    <!-- var:page_title -->
+  </div>
+  <div class="art-meta">
+    <div><b>投稿者</b>: <!-- var:parent_author --><!-- if:parent_has_trip --><span class="trip">&#9670;<!-- var:parent_trip --></span><!-- /if:parent_has_trip --></div>
+    <div><b>投稿日</b>: <!-- var:parent_display_date --></div>
+    <div><b>閲覧数</b>: <!-- var:access_count --></div>
+  </div>
+  <div class="comment">
+    <!-- raw:parent_formatted_body -->
+  </div>
+  <!-- if:parent_images -->
+  <div class="post-images">
+    <!-- loop:parent_images -->
+    <a href="<!-- var:url -->" target="_blank">
+      <img src="<!-- var:url -->" width="<!-- var:display_width -->" height="<!-- var:display_height -->" alt="添付画像" loading="lazy">
+    </a>
+    <!-- /loop:parent_images -->
+  </div>
+  <!-- /if:parent_images -->
+  <!-- unless:is_locked -->
+  <div class="edit-link">
+    <a href="<!-- var:cgi_url -->?mode=pwd&id=<!-- raw:thread_id -->&seq=0">&#9998;</a>
+  </div>
+  <!-- /unless:is_locked -->
+</article>
+<!-- /if:parent -->
+
+<!-- 返信一覧 -->
+<!-- if:replies -->
+<section class="replies">
+  <!-- loop:replies -->
+  <article class="post reply" id="res<!-- var:seq_no -->">
+    <div class="res-sub"><!-- var:subject --></div>
+    <div class="art-meta-flex">
+      <div class="res-author">
+        <b><!-- var:author --></b><!-- if:has_trip --><span class="trip">&#9670;<!-- var:trip --></span><!-- /if:has_trip -->
+        <span class="res-date">(<!-- var:display_date -->)</span>
+      </div>
+      <div class="reply-actions">
+        <a href="javascript:void(0)" onclick="LB.Desk.addFromThread(<!-- var:thread_id -->, '<!-- var:author -->', this)" class="btn-desk">&#128229; デスクに置く</a>
+        <a href="<!-- var:cgi_url -->?mode=form&id=<!-- var:thread_id -->&quote=<!-- var:seq_no -->" class="btn-quote">&#128172; 引用返信</a>
+      </div>
+    </div>
+
+    <!-- 文通デスク入力エリア -->
+    <div class="desk-input-area" style="display:none;">
+      <div class="desk-timeline" style="display:none;"></div>
+      <div class="desk-field">
+        <label>件名</label>
+        <input type="text" class="desk-subject" placeholder="お返事のタイトル">
+      </div>
+      <div class="desk-field">
+        <label>あなたの名前</label>
+        <input type="text" class="desk-name" placeholder="投稿者名">
+      </div>
+      <div class="desk-field">
+        <label>メッセージ</label>
+        <textarea placeholder="お返事をここに..." rows="4" class="desk-textarea"></textarea>
+      </div>
+      <div class="desk-actions">
+        <button onclick="LB.Desk.saveFromInput(<!-- var:thread_id -->, '<!-- var:author -->', this)" class="btn-save-desk">保存してデスクへ</button>
+        <button onclick="LB.Desk.closeInput(this)" class="btn-cancel-desk">キャンセル</button>
+      </div>
+    </div>
+
+    <div class="comment">
+      <!-- raw:formatted_body -->
+    </div>
+
+    <!-- if:images -->
+    <div class="post-images">
+      <!-- loop:images -->
+      <a href="<!-- var:url -->" target="_blank">
+        <img src="<!-- var:url -->" width="<!-- var:display_width -->" height="<!-- var:display_height -->" alt="添付画像" loading="lazy">
+      </a>
+      <!-- /loop:images -->
+    </div>
+    <!-- /if:images -->
+
+    <!-- unless:is_locked -->
+    <div class="edit-link">
+      <a href="<!-- var:cgi_url -->?mode=pwd&id=<!-- var:thread_id -->&seq=<!-- var:seq_no -->">&#9998;</a>
+    </div>
+    <!-- /unless:is_locked -->
+  </article>
+  <!-- /loop:replies -->
+</section>
+<!-- /if:replies -->
+
+<!-- 残量警告 -->
+<!-- if:nearly_full -->
+<div class="alert alert-warn mt-2">
+  このスレッドは返信数が上限に近づいています。新しいスレッドの作成をご検討ください。
+</div>
+<!-- /if:nearly_full -->
+
+<!-- 返信フォーム（ロックされていない場合のみ） -->
+<!-- unless:is_locked -->
+<div id="resform" class="form-container mt-3">
+  <h3 class="topic-header">&#9993; 書き込み画面</h3>
+
+  <form action="<!-- var:cgi_url -->" method="post" name="bbsform" enctype="multipart/form-data">
+    <input type="hidden" name="mode" value="post">
+    <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
+    <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+
+    <div class="bbsform">
+      <div class="form-group">
+        <label>件名</label>
+        <input type="text" name="subject" value="Re: <!-- var:page_title -->">
+      </div>
+      <div class="form-group">
+        <label>名前</label>
+        <input type="text" name="name" placeholder="あなたのお名前">
+      </div>
+      <div class="form-group">
+        <label>メッセージ</label>
+        <textarea name="body" rows="7" placeholder="ここにメッセージを入力..."></textarea>
+      </div>
+
+      <!-- if:image_upl -->
+      <div class="form-group">
+        <label>画像添付</label>
+        <div class="file-input-wrapper">
+          <input type="file" name="file1" accept="image/jpeg,image/png,image/gif">
+        </div>
+        <div class="file-input-wrapper">
+          <input type="file" name="file2" accept="image/jpeg,image/png,image/gif">
+        </div>
+        <div class="file-input-wrapper">
+          <input type="file" name="file3" accept="image/jpeg,image/png,image/gif">
+        </div>
+      </div>
+      <!-- /if:image_upl -->
+
+      <div class="form-group">
+        <label>削除パスワード</label>
+        <input type="password" name="pwd" maxlength="8">
+      </div>
+    </div>
+
+    <div class="submit-btn-area">
+      <input type="submit" value="送信" class="submit-btn">
+    </div>
+  </form>
+</div>
+<!-- /unless:is_locked -->
+
+<!-- ロック表示 -->
+<!-- if:is_locked -->
+<div class="alert alert-info mt-2">
+  &#128274; このスレッドはロックされています。新しい返信はできません。
+</div>
+<!-- /if:is_locked -->
+
+<!-- ページネーション -->
+<!-- raw:pagination -->
+
+<!-- 文通デスクパネル -->
+<div id="correspondeskPanel" class="correspondesk-panel" style="display:none;">
+  <div class="desk-header">
+    <h3>&#9993;&#65039; 文通デスク</h3>
+    <div class="desk-header-actions">
+      <button onclick="LB.Desk.sendAll()" class="btn-send-all">&#128640; 一括送信</button>
+      <button onclick="LB.Desk.clearAll()" class="btn-clear-all">全てクリア</button>
+      <button onclick="LB.Desk.togglePanel()" class="btn-toggle-desk">&#9660;</button>
+    </div>
+  </div>
+  <div class="desk-content">
+    <div id="deskItemList" class="desk-item-list"></div>
+    <p class="desk-empty-msg" id="deskEmptyMsg">お返事がストックされていません。</p>
+  </div>
+</div>
+
+<script>
+  var LB_CONFIG = {
+    apiUrl: '<!-- var:api_url -->',
+    cgiUrl: '<!-- var:cgi_url -->',
+    csrfToken: '<!-- var:csrf_token -->',
+    threadId: <!-- raw:thread_id -->
+  };
+</script>

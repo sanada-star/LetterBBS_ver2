@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理メニュー - <!-- var:bbs_title --></title>
+<link href="./cmn/admin.css" rel="stylesheet">
+</head>
+<body>
+<header class="admin-header">
+  <h1><a href="<!-- var:admin_url -->?action=menu"><!-- var:bbs_title --> 管理画面</a></h1>
+  <div class="admin-header-actions">
+    <a href="<!-- var:cgi_url -->">&#8617; サイトへ戻る</a>
+    <a href="<!-- var:admin_url -->?action=logout">ログアウト</a>
+  </div>
+</header>
+<div class="admin-main">
+  <!-- if:message -->
+  <div class="admin-alert admin-alert-success"><!-- var:message --></div>
+  <!-- /if:message -->
+
+  <div class="admin-menu-grid">
+    <a href="<!-- var:admin_url -->?action=threads" class="admin-menu-item">
+      <span class="icon">&#128196;</span>
+      <span class="label">スレッド管理</span>
+    </a>
+    <a href="<!-- var:admin_url -->?action=members" class="admin-menu-item">
+      <span class="icon">&#128101;</span>
+      <span class="label">会員管理</span>
+    </a>
+    <a href="<!-- var:admin_url -->?action=settings" class="admin-menu-item">
+      <span class="icon">&#9881;</span>
+      <span class="label">表示設定</span>
+    </a>
+    <a href="<!-- var:admin_url -->?action=design" class="admin-menu-item">
+      <span class="icon">&#127912;</span>
+      <span class="label">テーマ設定</span>
+    </a>
+    <a href="<!-- var:admin_url -->?action=password" class="admin-menu-item">
+      <span class="icon">&#128272;</span>
+      <span class="label">パスワード変更</span>
+    </a>
+    <a href="<!-- var:admin_url -->?action=size_check" class="admin-menu-item">
+      <span class="icon">&#128202;</span>
+      <span class="label">容量確認</span>
+    </a>
+  </div>
+</div>
+<div class="admin-footer"><p>LetterBBS ver2 Administration</p></div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+# Database and state files
+patio/data/*.db
+patio/data/*.db-*
+patio/data/sessions/*
+!patio/data/sessions/index.html
+!patio/data/sessions/.htaccess
+
+# Uploaded files
+patio/upl/*
+!patio/upl/.htaccess
+!patio/upl/index.html
+
+# Configuration files with secrets
+patio/init.cgi
+
+# OS generated files
+.DS_Store
+Thumbs.db

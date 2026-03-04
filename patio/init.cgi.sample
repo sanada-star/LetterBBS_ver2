@@ -1,0 +1,79 @@
+#!/usr/local/bin/perl
+
+#============================================================================
+# LetterBBS ver2 - 設定ファイル
+# このファイルはサーバー固有の設定を定義します。
+# 管理画面から変更可能な設定は DB の settings テーブルで管理されます。
+#============================================================================
+
+use strict;
+use warnings;
+use utf8;
+
+sub set_init {
+    my %cf;
+
+    #--- サーバーパス設定 ---
+    $cf{cgi_url}    = './patio.cgi';
+    $cf{admin_url}  = './admin.cgi';
+    $cf{api_url}    = './api.cgi';
+    $cf{data_dir}   = './data';
+    $cf{upl_dir}    = './upl';
+    $cf{upl_url}    = './upl';
+    $cf{tmpl_dir}   = './tmpl';
+    $cf{lib_dir}    = './lib';
+    $cf{db_file}    = './data/letterbbs.db';
+
+    #--- アップロード制限 ---
+    $cf{max_upload_size} = 5_120_000;  # 5MB
+    $cf{max_image_count} = 3;
+
+    #--- セキュリティ ---
+    # 【重要】設置時に必ずランダムな文字列に変更してください
+    $cf{csrf_secret} = 'CHANGE_ME_TO_RANDOM_STRING';
+
+    # HTTPS環境の場合は 1 にする（Secure Cookie有効化）
+    $cf{use_https} = 0;
+
+    #--- デバッグ ---
+    # 本番環境では必ず 0 にすること
+    $cf{debug} = 0;
+
+    #--- 以下は DB settings テーブルで管理されるデフォルト値 ---
+    # init.cgi の値は DB にレコードがない場合のフォールバック
+
+    $cf{bbs_title}    = '私書箱';
+    $cf{authkey}      = 0;       # 会員認証 0:無効 1:有効
+    $cf{authtime}     = 60;      # セッション有効時間（分）
+    $cf{image_upl}    = 0;       # 画像アップロード 0:不可 1:可
+    $cf{thumbnail}    = 0;       # サムネイル生成 0:無効 1:有効
+    $cf{use_captcha}  = 0;       # CAPTCHA 0:無効 1:ライブラリ版 2:モジュール版
+
+    $cf{i_max}        = 1000;    # 現行ログ最大スレッド数
+    $cf{p_max}        = 3000;    # 過去ログ最大スレッド数
+    $cf{m_max}        = 1000;    # 1スレッド最大返信数
+    $cf{pg_max}       = 10;      # 1ページ表示記事数
+    $cf{pgmax_now}    = 50;      # スレッド一覧 表示数
+    $cf{pgmax_past}   = 100;     # 過去ログ一覧 表示数
+
+    $cf{wait}         = 15;      # 連続投稿待機秒
+    $cf{max_failpass} = 10;      # 管理パスワード最大失敗回数
+    $cf{lock_days}    = 14;      # アカウントロック日数
+
+    $cf{theme}        = 'standard';  # standard / gloomy / simple / fox
+
+    #--- CAPTCHA設定 ---
+    $cf{cap_len}      = 5;       # CAPTCHA文字数
+    $cf{cap_time}     = 1800;    # CAPTCHA有効秒（30分）
+    $cf{cap_phrase}   = 'letterbbs_captcha_key';
+
+    #--- 画像リサイズ表示 ---
+    $cf{max_w}        = 250;     # 表示最大幅
+    $cf{max_h}        = 250;     # 表示最大高さ
+    $cf{thumb_w}      = 200;     # サムネイル幅
+    $cf{thumb_h}      = 200;     # サムネイル高さ
+
+    return %cf;
+}
+
+1;

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>会員管理 - <!-- var:bbs_title --></title>
+<link href="./cmn/admin.css" rel="stylesheet">
+</head>
+<body>
+<header class="admin-header">
+  <h1><a href="<!-- var:admin_url -->?action=menu"><!-- var:bbs_title --> 管理画面</a></h1>
+  <div class="admin-header-actions">
+    <a href="<!-- var:admin_url -->?action=menu">&#8617; メニュー</a>
+    <a href="<!-- var:admin_url -->?action=logout">ログアウト</a>
+  </div>
+</header>
+<div class="admin-main">
+  <div class="admin-card">
+    <h2>&#128101; 会員管理</h2>
+
+    <!-- if:message -->
+    <div class="admin-alert admin-alert-success"><!-- var:message --></div>
+    <!-- /if:message -->
+
+    <!-- 新規追加フォーム -->
+    <details style="margin-bottom:var(--sp-lg);">
+      <summary style="cursor:pointer; font-weight:500; color:var(--c-accent);">+ 新規会員を追加</summary>
+      <form action="<!-- var:admin_url -->" method="post" class="admin-form" style="margin-top:var(--sp-md); max-width:400px;">
+        <input type="hidden" name="action" value="member_exec">
+        <input type="hidden" name="exec" value="add">
+        <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+        <div class="form-group">
+          <label>ログインID</label>
+          <input type="text" name="login_id" required>
+        </div>
+        <div class="form-group">
+          <label>パスワード</label>
+          <input type="password" name="password" required>
+        </div>
+        <div class="form-group">
+          <label>表示名</label>
+          <input type="text" name="name">
+        </div>
+        <div class="form-group">
+          <label>権限</label>
+          <select name="rank">
+            <option value="2">書込可</option>
+            <option value="1">閲覧のみ</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-admin btn-admin-primary">追加</button>
+      </form>
+    </details>
+
+    <!-- 会員一覧 -->
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>ログインID</th>
+          <th>表示名</th>
+          <th>権限</th>
+          <th>状態</th>
+          <th>登録日</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- loop:users -->
+        <tr>
+          <td><!-- var:id --></td>
+          <td><!-- var:login_id --></td>
+          <td><!-- var:name --></td>
+          <td><!-- var:rank_label --></td>
+          <td><!-- var:status_label --></td>
+          <td><!-- var:display_date --></td>
+          <td>
+            <form action="<!-- var:admin_url -->" method="post" style="display:inline;">
+              <input type="hidden" name="action" value="member_exec">
+              <input type="hidden" name="exec" value="delete">
+              <input type="hidden" name="user_id" value="<!-- raw:id -->">
+              <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+              <button type="submit" class="btn-admin btn-admin-danger" onclick="return confirm('削除しますか？')" style="padding:2px 8px; font-size:0.75rem;">削除</button>
+            </form>
+          </td>
+        </tr>
+        <!-- /loop:users -->
+      </tbody>
+    </table>
+  </div>
+</div>
+<div class="admin-footer"><p>LetterBBS ver2 Administration</p></div>
+</body>
+</html>

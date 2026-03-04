@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スレッド管理 - <!-- var:bbs_title --></title>
+<link href="./cmn/admin.css" rel="stylesheet">
+</head>
+<body>
+<header class="admin-header">
+  <h1><a href="<!-- var:admin_url -->?action=menu"><!-- var:bbs_title --> 管理画面</a></h1>
+  <div class="admin-header-actions">
+    <a href="<!-- var:admin_url -->?action=menu">&#8617; メニュー</a>
+    <a href="<!-- var:admin_url -->?action=logout">ログアウト</a>
+  </div>
+</header>
+<div class="admin-main">
+  <div class="admin-card">
+    <h2>&#128196; スレッド管理</h2>
+
+    <!-- if:message -->
+    <div class="admin-alert admin-alert-success"><!-- var:message --></div>
+    <!-- /if:message -->
+
+    <form action="<!-- var:admin_url -->" method="post">
+      <input type="hidden" name="action" value="thread_exec">
+      <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+
+      <div style="display:flex; gap:var(--sp-sm); margin-bottom:var(--sp-md);">
+        <button type="submit" name="exec" value="delete" class="btn-admin btn-admin-danger" onclick="return confirm('選択したスレッドを削除しますか？')">削除</button>
+        <button type="submit" name="exec" value="lock" class="btn-admin btn-admin-outline">ロック切替</button>
+        <button type="submit" name="exec" value="archive" class="btn-admin btn-admin-outline">過去ログ化</button>
+      </div>
+
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th style="width:30px;"><input type="checkbox" id="selectAll"></th>
+            <th>ID</th>
+            <th>件名</th>
+            <th>作成者</th>
+            <th>返信数</th>
+            <th>状態</th>
+            <th>更新日</th>
+            <th>詳細</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- loop:threads -->
+          <tr>
+            <td><input type="checkbox" name="ids" value="<!-- var:id -->"></td>
+            <td><!-- var:id --></td>
+            <td><!-- var:subject --></td>
+            <td><!-- var:author --></td>
+            <td><!-- var:post_count --></td>
+            <td><!-- var:status_label --></td>
+            <td><!-- var:display_date --></td>
+            <td><a href="<!-- var:admin_url -->?action=thread_detail&id=<!-- var:id -->">詳細</a></td>
+          </tr>
+          <!-- /loop:threads -->
+        </tbody>
+      </table>
+    </form>
+
+    <!-- raw:pagination -->
+  </div>
+</div>
+<div class="admin-footer"><p>LetterBBS ver2 Administration</p></div>
+<script>
+document.getElementById('selectAll').addEventListener('change', function() {
+  var boxes = document.querySelectorAll('input[name="ids"]');
+  for (var i = 0; i < boxes.length; i++) boxes[i].checked = this.checked;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<h2 class="topic-header mb-1">&#128220; 過去ログ</h2>
+
+<p class="text-center mb-1">全 <!-- var:total --> 件</p>
+
+<section class="topic-container">
+  <!-- if:threads -->
+  <!-- loop:threads -->
+  <a href="<!-- var:cgi_url -->?mode=read&id=<!-- var:id -->" class="thread-card">
+    <div class="thread-icon"><span class="ico-<!-- var:icon -->"></span></div>
+    <div class="thread-content-row">
+      <span class="thread-title"><!-- var:subject --></span>
+      <div class="thread-info-line">
+        <span class="meta-from">From: <b><!-- var:author --></b></span>
+        <span class="meta-date"><!-- var:display_date --></span>
+      </div>
+    </div>
+    <div class="thread-stats-compact">
+      <span class="res-count"><!-- var:post_count --> 通</span>
+    </div>
+  </a>
+  <!-- /loop:threads -->
+  <!-- /if:threads -->
+
+  <!-- unless:threads -->
+  <p class="text-center mt-2">過去ログはありません。</p>
+  <!-- /unless:threads -->
+</section>
+
+<!-- raw:pagination -->

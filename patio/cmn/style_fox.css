@@ -1,0 +1,97 @@
+@charset "UTF-8";
+/*
+ * LetterBBS ver2 — Fox テーマ（ポップ・キリトリ線）
+ * キリトリ線や丸角ボタンなどを駆使したポップなデザイン
+ */
+
+@import url('style.css');
+
+:root {
+  /* カラーパレット (Pop: Vivid & Bright) */
+  --c-bg:         #fff9e6;
+  --c-bg-warm:    #fffdf5;
+  --c-card:       #ffffff;
+  --c-text:       #4a4a4a;
+  --c-text-sub:   #888888;
+  --c-primary:    #ff6b6b;
+  --c-primary-dk: #ee5253;
+  --c-secondary:  #1dd1a1;
+  --c-accent:     #feca57;
+  --c-border:     #ff9ff3;
+  --c-border-lt:  #ffdff8;
+  --c-danger:     #ff4757;
+  --c-info:       #48dbfb;
+  --c-warn:       #ff9f43;
+
+  /* タイムライン */
+  --c-sent:       #ffefeb;
+  --c-received:   #f1f2f6;
+
+  /* 角丸 (丸角ボタン) */
+  --r-sm:  8px;
+  --r-md:  16px;
+  --r-lg:  24px;
+  --r-xl:  32px;
+}
+
+/* ポップ特有の調整：キリトリ線 */
+.thread-card {
+  border: 2px dashed var(--c-primary);
+  box-shadow: 4px 4px 0px rgba(255, 107, 107, 0.2);
+}
+.thread-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px rgba(255, 107, 107, 0.3);
+}
+
+.post {
+  border: 2px dashed var(--c-accent);
+  box-shadow: 4px 4px 0px rgba(254, 202, 87, 0.2);
+}
+.post.starter {
+  border-left: 4px dashed var(--c-primary);
+}
+.post.reply {
+  border-left: 4px dashed var(--c-secondary);
+}
+
+.art-meta {
+  border-bottom: 2px dotted var(--c-border);
+}
+
+#menu {
+  border-bottom: 2px dashed var(--c-primary);
+}
+
+.bbs-navi {
+  border-bottom: 2px dashed var(--c-border-lt);
+}
+
+/* 丸角ボタンの徹底 */
+.submit-btn, .btn-secondary, .btn-outline, .btn-danger, .btn-desk, .btn-quote, .btn-save-desk, .btn-send-all {
+  border-radius: 50px;
+}
+.submit-btn {
+  box-shadow: 3px 3px 0px rgba(238, 82, 83, 0.4);
+}
+.submit-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px rgba(238, 82, 83, 0.5);
+}
+
+/* フォームのキリトリ線化 */
+.form-group input[type="text"], 
+.form-group input[type="password"], 
+.form-group input[type="email"], 
+.form-group textarea, 
+.form-group select {
+  border: 2px dashed var(--c-border);
+  border-radius: var(--r-md);
+}
+.form-group input:focus, 
+.form-group textarea:focus, 
+.form-group select:focus {
+  border-style: solid;
+  border-color: var(--c-primary);
+  box-shadow: none;
+}

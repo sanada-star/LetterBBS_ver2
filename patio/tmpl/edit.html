@@ -1,0 +1,53 @@
+<div class="form-container">
+  <h2 class="topic-header mb-1">&#9998; 記事編集</h2>
+
+  <form action="<!-- var:cgi_url -->" method="post" name="editform">
+    <input type="hidden" name="mode" value="edit_exec">
+    <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
+    <input type="hidden" name="seq" value="<!-- raw:seq -->">
+    <input type="hidden" name="pwd" value="<!-- var:pwd -->">
+    <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+
+    <div class="bbsform">
+      <div class="form-group">
+        <label>件名</label>
+        <input type="text" name="subject" value="<!-- var:post_subject -->">
+      </div>
+      <div class="form-group">
+        <label>名前</label>
+        <input type="text" value="<!-- var:post_author -->" disabled>
+      </div>
+      <div class="form-group">
+        <label>メッセージ</label>
+        <textarea name="body" rows="10"><!-- var:edit_body --></textarea>
+      </div>
+    </div>
+
+    <!-- if:images -->
+    <div class="attached-images mt-1 mb-1">
+      <label>添付画像</label>
+      <div class="post-images">
+        <!-- loop:images -->
+        <img src="<!-- var:upl_url -->/<!-- var:filename -->" width="100" alt="添付画像">
+        <!-- /loop:images -->
+      </div>
+    </div>
+    <!-- /if:images -->
+
+    <div class="submit-btn-area">
+      <input type="submit" value="更新する" class="submit-btn">
+      <button type="button" onclick="history.back()" class="btn-outline">キャンセル</button>
+    </div>
+  </form>
+
+  <div class="mt-2">
+    <form action="<!-- var:cgi_url -->" method="post" onsubmit="return confirm('本当に削除しますか？この操作は取り消せません。');">
+      <input type="hidden" name="mode" value="delete">
+      <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
+      <input type="hidden" name="seq" value="<!-- raw:seq -->">
+      <input type="hidden" name="pwd" value="<!-- var:pwd -->">
+      <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+      <input type="submit" value="&#128465; この記事を削除する" class="btn-danger">
+    </form>
+  </div>
+</div>

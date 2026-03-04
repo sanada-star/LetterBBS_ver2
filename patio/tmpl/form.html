@@ -1,0 +1,58 @@
+<div class="form-container">
+  <!-- if:is_reply -->
+  <h2 class="topic-header mb-1">&#9993; 返信: <!-- var:thread_subject --></h2>
+  <!-- /if:is_reply -->
+  <!-- unless:is_reply -->
+  <h2 class="topic-header mb-1"><span class="ico-fld_new"></span> 新しいスレッドを作成する</h2>
+  <!-- /unless:is_reply -->
+
+  <form action="<!-- var:cgi_url -->" method="post" enctype="multipart/form-data" name="bbsform">
+    <input type="hidden" name="mode" value="post">
+    <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
+    <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+
+    <div class="bbsform">
+      <div class="form-group">
+        <label>件名</label>
+        <input type="text" name="subject" placeholder="用件を記入してください" value="">
+      </div>
+      <div class="form-group">
+        <label>名前</label>
+        <input type="text" name="name" value="<!-- var:form_name -->" placeholder="あなたのお名前">
+      </div>
+      <div class="form-group">
+        <label>メッセージ</label>
+        <textarea name="body" rows="10" placeholder="ここにメッセージを入力..."><!-- var:form_body --></textarea>
+      </div>
+
+      <!-- if:image_upl -->
+      <div class="form-group">
+        <label>画像添付</label>
+        <div class="file-input-wrapper">
+          <input type="file" name="file1" accept="image/jpeg,image/png,image/gif">
+        </div>
+        <div class="file-input-wrapper">
+          <input type="file" name="file2" accept="image/jpeg,image/png,image/gif">
+        </div>
+        <div class="file-input-wrapper">
+          <input type="file" name="file3" accept="image/jpeg,image/png,image/gif">
+        </div>
+      </div>
+      <!-- /if:image_upl -->
+
+      <div class="form-group">
+        <label>削除用パスワード</label>
+        <input type="password" name="pwd" maxlength="8">
+      </div>
+    </div>
+
+    <div class="submit-btn-area">
+      <!-- if:is_reply -->
+      <input type="submit" value="返信する &#9993;" class="submit-btn">
+      <!-- /if:is_reply -->
+      <!-- unless:is_reply -->
+      <input type="submit" value="スレッドを作成する &#9993;" class="submit-btn">
+      <!-- /unless:is_reply -->
+    </div>
+  </form>
+</div>

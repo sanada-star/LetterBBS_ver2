@@ -1,0 +1,88 @@
+@charset "UTF-8";
+/*
+ * LetterBBS ver2 — Simple テーマ（モノクロ・グレー）
+ * グレーでモノクロなデザイン（フラット）
+ */
+
+@import url('style.css');
+
+:root {
+  /* カラーパレット (Monochrome: Gray) */
+  --c-bg:         #f0f0f0;
+  --c-bg-warm:    #f8f8f8;
+  --c-card:       #ffffff;
+  --c-text:       #333333;
+  --c-text-sub:   #666666;
+  --c-primary:    #555555;
+  --c-primary-dk: #333333;
+  --c-secondary:  #777777;
+  --c-accent:     #999999;
+  --c-border:     #cccccc;
+  --c-border-lt:  #e0e0e0;
+  --c-danger:     #666666;
+  --c-info:       #888888;
+  --c-warn:       #aaaaaa;
+
+  /* タイムライン */
+  --c-sent:       #eeeeee;
+  --c-received:   #f9f9f9;
+
+  /* 角丸 (シャープ) */
+  --r-sm:  0px;
+  --r-md:  0px;
+  --r-lg:  0px;
+  --r-xl:  0px;
+  
+  /* シャドウを無くし、フラットに */
+  --sh-sm:  none;
+  --sh-md:  none;
+  --sh-lg:  none;
+}
+
+/* モノクロ特有の調整：フラットデザイン */
+.thread-card, .post, .form-container, .toast, .desk-input-area {
+  border: 1px solid var(--c-border);
+}
+
+#head {
+  background: #333333;
+  color: #ffffff;
+}
+
+.submit-btn {
+  background: #555555;
+  color: #ffffff;
+  border-radius: 0;
+  box-shadow: none;
+}
+.submit-btn:hover {
+  background: #333333;
+}
+
+.badge-new {
+  background: var(--c-text);
+  color: var(--c-card);
+  border-radius: 0;
+}
+
+.post.starter, .post.reply {
+  border-left: 4px solid var(--c-primary);
+}
+
+a {
+  color: var(--c-text);
+  text-decoration: underline;
+}
+a:hover {
+  color: var(--c-primary-dk);
+}
+
+#menu a {
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+#menu a:hover {
+  background: var(--c-primary-dk);
+  border-color: var(--c-primary-dk);
+  color: #fff;
+}
