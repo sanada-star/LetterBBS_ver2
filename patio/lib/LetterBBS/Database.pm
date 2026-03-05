@@ -320,21 +320,14 @@ sub _insert_defaults {
     my ($self) = @_;
     my $dbh = $self->{dbh};
 
-    # 初期管理者アカウント: ランダムパスワードを自動生成
-    require Digest::SHA;
-    my $init_pwd  = _random_hex(8);    # 16文字のランダム文字列
-    my $salt      = _random_hex(16);
-    my $hash      = Digest::SHA::sha256_hex($salt . $init_pwd);
-    my $password_hash = "\$sha256\$$salt\$$hash";
+    # 初期管理者アカウント: 初期パスワード "password"（設置後すぐに変更すること）
+    require LetterBBS::Auth;
+    my $password_hash = LetterBBS::Auth::hash_password('password');
 
-    my $inserted = $dbh->do(
+    $dbh->do(
         "INSERT OR IGNORE INTO admin_auth (login_id, password_hash, updated_at) VALUES (?, ?, datetime('now','localtime'))",
         undef, 'admin', $password_hash
     );
-    # 初回起動時のみ警告表示（INSERT OR IGNORE の場合、既存ならスキップされる）
-    if ($inserted && $inserted > 0) {
-        print STDERR "[LetterBBS] *** 初期管理者パスワード: $init_pwd *** ログイン後ただち変更してください。\n";
-    }
 
     # デフォルト設定値
     my %defaults = (

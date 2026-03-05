@@ -42,7 +42,7 @@ sub list {
     for my $t (@$threads) {
         $t->{icon} = $self->_thread_icon($t);
         $t->{display_date} = _format_date($t->{updated_at});
-        $t->{is_new} = _is_new($t->{updated_at});
+        $t->{is_new} = _is_new($t->{updated_at}) ? 1 : 0;
     }
 
     my $html = $self->{template}->render_with_layout('bbs.html',
@@ -52,7 +52,7 @@ sub list {
         page        => $page,
         total_pages => $total_pages,
         total       => $total,
-        pagination  => _pagination($page, $total_pages, $self->{config}->get('cgi_url') . '?action=list'),
+        pagination  => _pagination($page, $total_pages, ($self->{config}->get('cgi_url') || '') . '?action=list'),
     );
     $self->_output_html($html);
 }
@@ -133,7 +133,7 @@ sub past {
         page        => $page,
         total_pages => $total_pages,
         total       => $total,
-        pagination  => _pagination($page, $total_pages, $self->{config}->get('cgi_url') . '?action=past'),
+        pagination  => _pagination($page, $total_pages, ($self->{config}->get('cgi_url') || '') . '?action=past'),
     );
     $self->_output_html($html);
 }
@@ -143,12 +143,12 @@ sub past {
 sub _common_vars {
     my ($self) = @_;
     return (
-        bbs_title  => $self->{config}->get('bbs_title'),
-        css_url    => $self->{config}->css_url(),
-        cgi_url    => $self->{config}->get('cgi_url'),
-        api_url    => $self->{config}->get('api_url'),
-        admin_url  => $self->{config}->get('admin_url'),
-        image_upl  => $self->{config}->get('image_upl'),
+        bbs_title  => $self->{config}->get('bbs_title') || '',
+        css_url    => $self->{config}->css_url() || '',
+        cgi_url    => $self->{config}->get('cgi_url') || '',
+        api_url    => $self->{config}->get('api_url') || '',
+        admin_url  => $self->{config}->get('admin_url') || '',
+        image_upl  => $self->{config}->get('image_upl') || 0,
     );
 }
 
@@ -158,8 +158,13 @@ sub _output_html {
     print "X-Content-Type-Options: nosniff\n";
     print "X-Frame-Options: DENY\n";
     print "Referrer-Policy: same-origin\n";
-    print $self->{session}->cookie_header() . "\n" if $self->{session}->cookie_header();
+    if (my $cookie = $self->{session}->cookie_header()) {
+        # malformed header を防ぐため、Cookie が Set-Cookie: 形式で始まることを保証
+        $cookie = "Set-Cookie: " . $cookie unless $cookie =~ /^Set-Cookie:/i;
+        print "$cookie\n";
+    }
     print "\n";
+    binmode STDOUT, ":utf8";
     print $html;
 }
 

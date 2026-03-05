@@ -45,7 +45,9 @@ sub process {
 
     my $original = $cgi->upload_filename($field_name) || '';
     # Windowsパス形式のファイル名を底名のみに整形
-    $original =~ s/.*[/\\]//;
+    $original =~ s{.*(?:/|\\)}{};
+
+
 
     my $size = length($data);
     if ($size > $self->{max_size}) {

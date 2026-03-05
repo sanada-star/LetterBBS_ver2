@@ -10,8 +10,8 @@ use warnings;
 use utf8;
 
 BEGIN {
-    my $lib_dir = './lib';
-    unshift @INC, $lib_dir;
+    use FindBin qw($Bin);
+    unshift @INC, "$Bin/lib";
 }
 
 require './init.cgi';
@@ -22,25 +22,27 @@ use LetterBBS::Session;
 use LetterBBS::Template;
 use LetterBBS::Router;
 
+my ($db, $config, $session, $template, $router);
+
 eval {
     my %cf = set_init();
 
-    my $db = LetterBBS::Database->new($cf{db_file});
+    $db = LetterBBS::Database->new($cf{db_file});
     $db->initialize();
 
-    my $config = LetterBBS::Config->new(\%cf, $db);
+    $config = LetterBBS::Config->new(\%cf, $db);
 
     # 管理画面用セッション（クッキー名を分離）
-    my $session = LetterBBS::Session->new(
+    $session = LetterBBS::Session->new(
         $db, 'letterbbs_admin_sid', $config->get('authtime')
     );
     $session->start();
     $session->cleanup();
 
-    my $template = LetterBBS::Template->new($config->get('tmpl_dir'));
+    $template = LetterBBS::Template->new($config->get('tmpl_dir'));
     my $cgi = _build_admin_cgi();
 
-    my $router = LetterBBS::Router->new(
+    $router = LetterBBS::Router->new(
         config   => $config,
         db       => $db,
         session  => $session,
@@ -48,15 +50,19 @@ eval {
         cgi      => $cgi,
     );
 
-    my $action = _admin_get_param('mode') || '';
+    my $action = _admin_get_param('action') || '';
     $router->dispatch_admin($action);
 
     $db->disconnect();
 };
 if ($@) {
-    warn "[LetterBBS] Admin Fatal error: $@";
+    my $err = $@;
+    warn "[LetterBBS] Admin Fatal error: $err";
     print "Content-Type: text/html; charset=utf-8\n\n";
-    print "<html><body><h1>システムエラー</h1><p>管理画面でエラーが発生しました。</p></body></html>";
+    print "<html><head><meta charset='UTF-8'></head><body>";
+    print "<h1>システムエラー</h1>";
+    print "<p>管理画面でエラーが発生しました。</p>";
+    print "</body></html>";
 }
 
 exit;

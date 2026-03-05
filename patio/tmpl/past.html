@@ -5,16 +5,12 @@
 <section class="topic-container">
   <!-- if:threads -->
   <!-- loop:threads -->
-  <a href="<!-- var:cgi_url -->?mode=read&id=<!-- var:id -->" class="thread-card">
-    <div class="thread-icon"><span class="ico-<!-- var:icon -->"></span></div>
-    <div class="thread-content-row">
-      <span class="thread-title"><!-- var:subject --></span>
-      <div class="thread-info-line">
-        <span class="meta-from">From: <b><!-- var:author --></b></span>
-        <span class="meta-date"><!-- var:display_date --></span>
-      </div>
-    </div>
-    <div class="thread-stats-compact">
+  <a href="<!-- var:cgi_url -->?mode=read&id=<!-- var:id -->" class="thread-row">
+    <div class="t-icon"><span class="ico-<!-- var:icon -->"></span></div>
+    <div class="t-title" title="<!-- var:subject -->"><!-- var:subject --></div>
+    <div class="t-from" title="<!-- var:author -->"><b><!-- var:author --></b></div>
+    <div class="t-date"><!-- var:display_date --></div>
+    <div class="t-stats">
       <span class="res-count"><!-- var:post_count --> 通</span>
     </div>
   </a>

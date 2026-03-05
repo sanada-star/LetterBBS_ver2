@@ -1,0 +1,74 @@
+@charset "UTF-8";
+/*
+ * LetterBBS ver2 — Punk テーマ
+ * サイバーパンクカラーを散りばめたネオンデザイン
+ */
+
+@import url('style.css');
+
+:root {
+  /* カラーパレット (Punk: Cyberpunk Neon) */
+  --c-bg:         #05051a;
+  --c-bg-warm:    #0a0a2a;
+  --c-card:       #111135;
+  --c-text:       #e0fbfc;
+  --c-text-sub:   #7ca3b5;
+  --c-primary:    #ff0055;
+  --c-primary-dk: #cc0044;
+  --c-secondary:  #00f0ff;
+  --c-accent:     #fbee0f;
+  --c-border:     #22225a;
+  --c-border-lt:  #15153f;
+  --c-danger:     #ff0033;
+  --c-info:       #00f0ff;
+  --c-warn:       #fbee0f;
+
+  /* タイムライン */
+  --c-sent:       #2a0a22;
+  --c-received:   #09202f;
+
+  /* フォント (Tech/Sleek) */
+  --ff-body:  'Courier New', 'Inter', sans-serif;
+  
+  /* シャドウ (Neon Glow) */
+  --sh-sm:  0 0 5px rgba(255, 0, 85, 0.3);
+  --sh-md:  0 0 10px rgba(0, 240, 255, 0.4);
+  --sh-lg:  0 0 20px rgba(251, 238, 15, 0.5);
+}
+
+/* パンクなデザイン特有の調整 */
+#head {
+  background: linear-gradient(135deg, #05051a 0%, #111135 100%);
+  border-bottom: 2px solid var(--c-secondary);
+  box-shadow: 0 0 10px var(--c-secondary);
+}
+
+.badge-new {
+  background: var(--c-accent);
+  color: #000;
+  box-shadow: 0 0 5px var(--c-accent);
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, var(--c-primary), var(--c-accent));
+  color: #000;
+  border: none;
+  box-shadow: 0 0 8px var(--c-primary);
+}
+
+a {
+  color: var(--c-secondary);
+  text-shadow: 0 0 3px var(--c-secondary);
+}
+a:hover {
+  color: #fff;
+  text-shadow: 0 0 8px var(--c-secondary);
+  text-decoration: none;
+}
+.thread-card, .thread-row {
+  border: 1px solid var(--c-border);
+}
+.thread-row:hover {
+  border-left-color: var(--c-secondary);
+  box-shadow: inset 2px 0 0 var(--c-secondary), 0 0 10px rgba(0,240,255,0.2);
+}

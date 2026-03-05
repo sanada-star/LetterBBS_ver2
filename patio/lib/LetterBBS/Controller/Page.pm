@@ -109,11 +109,11 @@ sub logout {
 sub _common_vars {
     my ($self) = @_;
     return (
-        bbs_title => $self->{config}->get('bbs_title'),
-        css_url   => $self->{config}->css_url(),
-        cgi_url   => $self->{config}->get('cgi_url'),
-        api_url   => $self->{config}->get('api_url'),
-        admin_url => $self->{config}->get('admin_url'),
+        bbs_title => $self->{config}->get('bbs_title') || '',
+        css_url   => $self->{config}->css_url() || '',
+        cgi_url   => $self->{config}->get('cgi_url') || '',
+        api_url   => $self->{config}->get('api_url') || '',
+        admin_url => $self->{config}->get('admin_url') || '',
     );
 }
 
@@ -123,8 +123,12 @@ sub _output_html {
     print "X-Content-Type-Options: nosniff\n";
     print "X-Frame-Options: DENY\n";
     print "Referrer-Policy: same-origin\n";
-    print $self->{session}->cookie_header() . "\n" if $self->{session}->cookie_header();
+    if (my $cookie = $self->{session}->cookie_header()) {
+        $cookie = "Set-Cookie: " . $cookie unless $cookie =~ /^Set-Cookie:/i;
+        print "$cookie\n";
+    }
     print "\n";
+    binmode STDOUT, ":utf8";
     print $html;
 }
 

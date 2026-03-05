@@ -57,6 +57,10 @@ sub login {
     if ($result->{success}) {
         $self->{session}->regenerate();
         $self->{session}->set('admin_login', $login_id);
+        # デフォルトパスワードのままなら警告フラグをセット
+        if ($password eq 'password') {
+            $self->{session}->set('admin_pw_default', 1);
+        }
         print "Status: 302 Found\n";
         print "Location: " . $self->{config}->get('admin_url') . "?action=menu\n";
         print $self->{session}->cookie_header() . "\n" if $self->{session}->cookie_header();
@@ -102,6 +106,7 @@ sub menu {
         user_count     => $user_count,
         db_size        => $db_size_mb,
         login_id       => $self->{session}->get('admin_login'),
+        pw_default     => $self->{session}->get('admin_pw_default') ? 1 : 0,
     );
     $self->_output_html($html);
 }
@@ -303,8 +308,9 @@ sub design {
         page_title    => 'デザイン設定',
         current_theme => $current,
         is_standard   => ($current eq 'standard' ? 1 : 0),
-        is_gloomy     => ($current eq 'gloomy'   ? 1 : 0),
-        is_simple     => ($current eq 'simple'   ? 1 : 0),
+        is_cool       => ($current eq 'cool'     ? 1 : 0),
+        is_dark       => ($current eq 'dark'     ? 1 : 0),
+        is_punk       => ($current eq 'punk'     ? 1 : 0),
         is_fox        => ($current eq 'fox'      ? 1 : 0),
     );
     $self->_output_html($html);
@@ -322,7 +328,7 @@ sub design_exec {
     }
 
     my $theme = $cgi->param('theme') || 'standard';
-    $theme = 'standard' unless $theme =~ /^(standard|gloomy|simple|fox)$/;
+    $theme = 'standard' unless $theme =~ /^(standard|cool|dark|punk|fox)$/;
 
     $self->{setting_m}->set('theme', $theme);
     $self->{config}->load_db_settings($self->{db});
@@ -375,6 +381,8 @@ sub password_exec {
     unless ($error) {
         my $result = $self->{admin_m}->change_password($login_id, $old_pass, $new_pass);
         $error = $result->{reason} unless $result->{success};
+        # パスワード変更成功 → デフォルトパスワード警告フラグをクリア
+        $self->{session}->set('admin_pw_default', 0) if $result->{success};
     }
 
     my $html = $self->{template}->render('admin/password.html',
@@ -429,9 +437,9 @@ sub _admin_vars {
         $self->{session}->id(), $self->{config}->get('csrf_secret')
     );
     return (
-        bbs_title  => $self->{config}->get('bbs_title'),
-        admin_url  => $self->{config}->get('admin_url'),
-        cgi_url    => $self->{config}->get('cgi_url'),
+        bbs_title  => $self->{config}->get('bbs_title') || '',
+        admin_url  => $self->{config}->get('admin_url') || '',
+        cgi_url    => $self->{config}->get('cgi_url') || '',
         css_url    => './cmn/admin.css',
         csrf_token => $csrf_token,
     );
@@ -442,8 +450,12 @@ sub _output_html {
     print "Content-Type: text/html; charset=utf-8\n";
     print "X-Content-Type-Options: nosniff\n";
     print "X-Frame-Options: DENY\n";
-    print $self->{session}->cookie_header() . "\n" if $self->{session}->cookie_header();
+    if (my $cookie = $self->{session}->cookie_header()) {
+        $cookie = "Set-Cookie: " . $cookie unless $cookie =~ /^Set-Cookie:/i;
+        print "$cookie\n";
+    }
     print "\n";
+    binmode STDOUT, ":utf8";
     print $html;
 }
 

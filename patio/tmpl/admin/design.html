@@ -30,28 +30,35 @@
         <label>テーマを選択</label>
         <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:var(--sp-md); margin-top:var(--sp-sm);">
           <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
-            <input type="radio" name="theme" value="standard"<!-- if:theme_standard --> checked<!-- /if:theme_standard -->>
+            <input type="radio" name="theme" value="standard"<!-- if:is_standard --> checked<!-- /if:is_standard -->>
             <div>
-              <strong>Pop</strong>
-              <div style="font-size:0.8rem; color:var(--c-text-sub);">温かみのあるデフォルトテーマ</div>
+              <strong>Default</strong>
+              <div style="font-size:0.8rem; color:var(--c-text-sub);">白背景に紺のクリアな定番</div>
             </div>
           </label>
           <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
-            <input type="radio" name="theme" value="gloomy"<!-- if:theme_gloomy --> checked<!-- /if:theme_gloomy -->>
+            <input type="radio" name="theme" value="cool"<!-- if:is_cool --> checked<!-- /if:is_cool -->>
             <div>
-              <strong>Gloomy</strong>
-              <div style="font-size:0.8rem; color:var(--c-text-sub);">落ち着いたダークテーマ</div>
+              <strong>Cool</strong>
+              <div style="font-size:0.8rem; color:var(--c-text-sub);">黒と青を基調としたクールなデザイン</div>
             </div>
           </label>
           <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
-            <input type="radio" name="theme" value="simple"<!-- if:theme_simple --> checked<!-- /if:theme_simple -->>
+            <input type="radio" name="theme" value="dark"<!-- if:is_dark --> checked<!-- /if:is_dark -->>
             <div>
-              <strong>Simple</strong>
-              <div style="font-size:0.8rem; color:var(--c-text-sub);">シンプルで軽い読みやすさ重視</div>
+              <strong>Dark</strong>
+              <div style="font-size:0.8rem; color:var(--c-text-sub);">黒背景に濃い赤のダークテーマ</div>
             </div>
           </label>
           <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
-            <input type="radio" name="theme" value="fox"<!-- if:theme_fox --> checked<!-- /if:theme_fox -->>
+            <input type="radio" name="theme" value="punk"<!-- if:is_punk --> checked<!-- /if:is_punk -->>
+            <div>
+              <strong>Punk</strong>
+              <div style="font-size:0.8rem; color:var(--c-text-sub);">サイバーパンクカラーなネオン色</div>
+            </div>
+          </label>
+          <label style="display:flex; align-items:center; gap:var(--sp-sm); padding:var(--sp-md); border:2px solid var(--c-border); border-radius:var(--r-md); cursor:pointer;">
+            <input type="radio" name="theme" value="fox"<!-- if:is_fox --> checked<!-- /if:is_fox -->>
             <div>
               <strong>Fox</strong>
               <div style="font-size:0.8rem; color:var(--c-text-sub);">狐をモチーフにした和テーマ</div>

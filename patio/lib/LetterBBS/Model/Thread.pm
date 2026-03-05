@@ -38,6 +38,16 @@ sub list {
     return $rows || [];
 }
 
+# 著者名からスレッド検索（私書箱システム用: 相手のスレッドを特定する）
+sub find_by_author {
+    my ($self, $author) = @_;
+    return undef unless defined $author && $author ne '';
+    return $self->dbh->selectrow_hashref(
+        "SELECT * FROM threads WHERE author = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1",
+        undef, $author
+    );
+}
+
 # スレッド数カウント
 sub count_by_status {
     my ($self, $status) = @_;

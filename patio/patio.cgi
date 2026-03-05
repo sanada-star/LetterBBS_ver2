@@ -10,8 +10,8 @@ use warnings;
 use utf8;
 
 BEGIN {
-    my $lib_dir = './lib';
-    unshift @INC, $lib_dir;
+    use FindBin qw($Bin);
+    unshift @INC, "$Bin/lib";
 }
 
 require './init.cgi';
@@ -48,7 +48,10 @@ eval {
             # 未認証 → ログイン画面へリダイレクト
             print "Status: 302 Found\n";
             print "Location: " . $config->get('cgi_url') . "?mode=enter\n";
-            print $session->cookie_header() . "\n" if $session->cookie_header();
+            if (my $cookie = $session->cookie_header()) {
+                $cookie = "Set-Cookie: " . $cookie unless $cookie =~ /^Set-Cookie:/i;
+                print "$cookie\n";
+            }
             print "\n";
             $db->disconnect();
             exit;
@@ -78,6 +81,7 @@ eval {
 if ($@) {
     warn "[LetterBBS] Fatal error: $@";
     print "Content-Type: text/html; charset=utf-8\n\n";
+    binmode STDOUT, ":utf8";
     print "<html><body><h1>システムエラー</h1><p>申し訳ございません。システムエラーが発生しました。</p></body></html>";
 }
 
@@ -160,14 +164,17 @@ exit;
             next unless $part =~ /Content-Disposition:\s*form-data;\s*name="([^"]+)"/i;
             my $name = $1;
 
-            if ($part =~ /filename="([^"]+)"/i) {
-                # ファイルフィールド → ここでは名前だけ記録
-                # 実際のファイルデータは Upload.pm で再取得
-                $_params{"${name}_filename"} = $1;
-                # バイナリデータ部分を取得
+            if ($part =~ /filename="([^"]*)"/i) {
+                # ファイルフィールド（空ファイル名も含む）
+                my $fname = $1;
                 my ($headers, $body) = split /\r?\n\r?\n/, $part, 2;
                 $body =~ s/\r?\n$// if defined $body;
-                $_params{"${name}_data"} = $body;
+                # ファイル名がある場合のみデータを記録
+                if (defined $fname && $fname ne '' && defined $body && length($body) > 0) {
+                    $_params{"${name}_filename"} = $fname;
+                    $_params{"${name}_data"} = $body;
+                }
+                # 空ファイルフィールドはスキップ（テキストとして解析しない）
             } else {
                 # テキストフィールド
                 my ($headers, $body) = split /\r?\n\r?\n/, $part, 2;
@@ -196,7 +203,10 @@ exit;
         return '' unless defined $str;
         $str =~ tr/+/ /;
         $str =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
-        utf8::decode($str) unless utf8::is_utf8($str);
+        eval {
+            require Encode;
+            $str = Encode::decode_utf8($str);
+        };
         return $str;
     }
 

@@ -10,16 +10,27 @@ use warnings;
 use utf8;
 
 sub new {
-    my ($class, $init_path) = @_;
+    my ($class, $init, $db) = @_;
     my $self = bless {
         cf => {},
     }, $class;
 
+    # ハッシュリファレンスが渡された場合はそれを使用
+    if (ref $init eq 'HASH') {
+        $self->{cf} = { %$init };
+    }
     # init.cgi の固定設定を読み込み
-    if ($init_path && -f $init_path) {
-        do $init_path;
-        my %cf = set_init();
-        $self->{cf} = \%cf;
+    elsif ($init && -f $init) {
+        do $init;
+        if (defined &set_init) {
+            my %cf = set_init();
+            $self->{cf} = \%cf;
+        }
+    }
+
+    # DBオブジェクトがあれば動的設定を読み込み
+    if ($db) {
+        $self->load_db_settings($db);
     }
 
     return $self;
@@ -39,6 +50,13 @@ sub load_db_settings {
     };
     if ($@) {
         warn "[LetterBBS Config] DB設定読み込みエラー: $@";
+    }
+
+    # csrf_secretが未設定の場合、自動生成して保存
+    unless ($self->get('csrf_secret')) {
+        require LetterBBS::Auth;
+        my $secret = LetterBBS::Auth::generate_token();
+        $self->set('csrf_secret', $secret, $db);
     }
 }
 
@@ -69,9 +87,13 @@ sub css_url {
     my $theme = $self->get('theme') || 'standard';
     my %theme_css = (
         standard => './cmn/style.css',
-        gloomy   => './cmn/style_gloomy.css',
-        simple   => './cmn/style_simple.css',
+        cool     => './cmn/style_cool.css',
+        dark     => './cmn/style_dark.css',
+        punk     => './cmn/style_punk.css',
         fox      => './cmn/style_fox.css',
+        # 後方互換性用
+        gloomy   => './cmn/style_cool.css',
+        simple   => './cmn/style.css',
     );
     return $theme_css{$theme} || $theme_css{standard};
 }

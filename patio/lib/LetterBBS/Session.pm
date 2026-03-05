@@ -41,7 +41,7 @@ sub start {
     # クッキーからセッションID取得
     my $cookie_str = $ENV{HTTP_COOKIE} || '';
     my $sid;
-    if ($cookie_str =~ /(?:^|;\s*)$self->{cookie_name}=([0-9a-f]{64})/) {
+    if ($cookie_str =~ /(?:^|;\s*)\Q$self->{cookie_name}\E=([0-9a-f]{64})/) {
         $sid = $1;
     }
 
@@ -94,7 +94,7 @@ sub destroy {
     $self->{session_id} = undef;
     $self->{data} = {};
     # クッキー削除（Max-Age=0 が確实。Expiresはブラウザ互換性のため併記）
-    $self->{_cookie_header} = "$cname=deleted; Path=/; Max-Age=0; HttpOnly; SameSite=Lax";
+    $self->{_cookie_header} = "Set-Cookie: $cname=deleted; Path=/; Max-Age=0; HttpOnly; SameSite=Lax";
 }
 
 # セッションIDを再生成（ログイン後のSession Fixation対策）
@@ -140,7 +140,7 @@ sub _create {
 
     # HTTPS環境ではSecure属性を付加
     my $secure = ($ENV{HTTPS} && $ENV{HTTPS} eq 'on') ? '; Secure' : '';
-    my $cookie = "$self->{cookie_name}=$sid; Path=/; HttpOnly; SameSite=Lax$secure";
+    my $cookie = "Set-Cookie: $self->{cookie_name}=$sid; Path=/; HttpOnly; SameSite=Lax$secure";
     $self->{_cookie_header} = $cookie;
 }
 

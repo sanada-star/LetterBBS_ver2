@@ -10,8 +10,8 @@ use warnings;
 use utf8;
 
 BEGIN {
-    my $lib_dir = './lib';
-    unshift @INC, $lib_dir;
+    use FindBin qw($Bin);
+    unshift @INC, "$Bin/lib";
 }
 
 require './init.cgi';
@@ -40,7 +40,10 @@ eval {
     $session->start();
 
     # セッションクッキーヘッダー
-    print $session->cookie_header() . "\n" if $session->cookie_header();
+    if (my $cookie = $session->cookie_header()) {
+        $cookie = "Set-Cookie: " . $cookie unless $cookie =~ /^Set-Cookie:/i;
+        print "$cookie\n";
+    }
     print "\n";  # ヘッダー終了
 
     # CGIパラメータ取得
@@ -61,7 +64,7 @@ eval {
         cgi      => $cgi,
     );
 
-    my $api_action = _api_get_param('action') || '';
+    my $api_action = _api_get_param('api') || '';
     $router->dispatch_api($api_action);
 
     $db->disconnect();
@@ -122,7 +125,10 @@ exit;
         return '' unless defined $str;
         $str =~ tr/+/ /;
         $str =~ s/%([0-9A-Fa-f]{2})/chr(hex($1))/eg;
-        utf8::decode($str) unless utf8::is_utf8($str);
+        eval {
+            require Encode;
+            $str = Encode::decode_utf8($str);
+        };
         return $str;
     }
 
