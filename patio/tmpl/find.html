@@ -9,7 +9,7 @@
         <label>キーワード</label>
         <div style="display:flex; gap:0.5rem;">
           <input type="text" name="keyword" value="<!-- var:keyword -->" style="flex:1;" placeholder="検索キーワードを入力">
-          <select name="mode" style="width:auto;">
+          <select name="cond" style="width:auto;">
             <option value="AND"<!-- if:mode_and --> selected<!-- /if:mode_and -->>AND検索</option>
             <option value="OR"<!-- if:mode_or --> selected<!-- /if:mode_or -->>OR検索</option>
           </select>
@@ -31,15 +31,13 @@
 <!-- if:results -->
 <section class="topic-container">
   <!-- loop:results -->
-  <article class="thread-card">
-    <div class="thread-content">
-      <a href="<!-- var:cgi_url -->?mode=read&id=<!-- var:thread_id -->#res<!-- var:seq_no -->" class="thread-title"><!-- var:subject --></a>
-      <div class="thread-info-line">
-        <span class="meta-from">From: <b><!-- var:author --></b></span>
-        <span class="meta-date"><!-- var:display_date --></span>
-      </div>
-      <p class="search-excerpt"><!-- var:body_excerpt --></p>
+  <article class="thread-row" style="flex-direction: column; align-items: stretch;">
+    <div style="display: flex; align-items: baseline; gap: 12px; width: 100%;">
+      <a href="<!-- var:cgi_url -->?mode=read&id=<!-- var:thread_id -->#res<!-- var:seq_no -->" class="t-title" style="flex: 1 1 auto; color: var(--c-primary);"><!-- var:subject --></a>
+      <div class="t-from" style="flex: 0 0 auto;"><b><!-- var:author --></b></div>
+      <div class="t-date" style="flex: 0 0 auto;"><!-- var:display_date --></div>
     </div>
+    <div class="search-excerpt" style="margin-top: 5px; font-size: 0.9em; color: var(--c-text-sub); line-height: 1.5;"><!-- var:body_excerpt --></div>
   </article>
   <!-- /loop:results -->
 </section>

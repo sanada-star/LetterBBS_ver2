@@ -36,19 +36,23 @@ sub show {
     );
 
     my $html = $self->{template}->render_with_layout('desk.html',
-        bbs_title  => $self->{config}->get('bbs_title'),
-        css_url    => $self->{config}->css_url(),
-        cgi_url    => $self->{config}->get('cgi_url'),
-        api_url    => $self->{config}->get('api_url'),
-        admin_url  => $self->{config}->get('admin_url'),
+        bbs_title  => $self->{config}->get('bbs_title') || '',
+        css_url    => $self->{config}->css_url() || '',
+        cgi_url    => $self->{config}->get('cgi_url') || '',
+        api_url    => $self->{config}->get('api_url') || '',
+        admin_url  => $self->{config}->get('admin_url') || '',
         page_title => '文通デスク',
         csrf_token => $csrf_token,
     );
 
     print "Content-Type: text/html; charset=utf-8\n";
     print "X-Content-Type-Options: nosniff\n";
-    print $self->{session}->cookie_header() . "\n" if $self->{session}->cookie_header();
+    if (my $cookie = $self->{session}->cookie_header()) {
+        $cookie = "Set-Cookie: " . $cookie unless $cookie =~ /^Set-Cookie:/i;
+        print "$cookie\n";
+    }
     print "\n";
+    binmode STDOUT, ":utf8";
     print $html;
 }
 

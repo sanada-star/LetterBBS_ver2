@@ -1,68 +1,75 @@
 @charset "UTF-8";
 /*
- * LetterBBS ver2 — Pop テーマ（デフォルト）
- * 往復書簡型掲示板のための、温かみと遊び心のあるデザイン
+ * LetterBBS ver2 — Default テーマ
+ * 往復書簡型掲示板のための、白背景に紺色を用いたクリアなデザイン
  */
 
 /* ============================================================
    0. Google Fonts (Zen Maru Gothic)
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap");
 
 /* ============================================================
    1. CSS カスタムプロパティ (テーマトークン)
    ============================================================ */
 :root {
-  /* カラーパレット */
-  --c-bg:         #f5efe6;
-  --c-bg-warm:    #fdfaf3;
-  --c-card:       #ffffff;
-  --c-text:       #3e3232;
-  --c-text-sub:   #7a6b5d;
-  --c-primary:    #d4785c;
-  --c-primary-dk: #b85a3e;
-  --c-secondary:  #6b9e78;
-  --c-accent:     #c9a84c;
-  --c-border:     #e0d5c5;
-  --c-border-lt:  #ede6d8;
-  --c-danger:     #c0392b;
-  --c-info:       #5b8fb9;
-  --c-warn:       #d4a017;
+  /* カラーパレット (Default: White & Navy) */
+  --c-bg: #f8f9fa;
+  --c-bg-warm: #ffffff;
+  --c-card: #ffffff;
+  --c-text: #212529;
+  --c-text-sub: #6c757d;
+  --c-primary: #1e3a8a; /* 紺 (Navy) */
+  --c-primary-dk: #172554;
+  --c-secondary: #3b82f6; /* 青 (Blue) */
+  --c-accent: #f59e0b;
+  --c-border: #dee2e6;
+  --c-border-lt: #e9ecef;
+  --c-danger: #dc3545;
+  --c-info: #0ea5e9;
+  --c-warn: #f59e0b;
 
   /* タイムライン */
-  --c-sent:       #e8f0e4;
-  --c-received:   #faf6ee;
+  --c-sent: #eef2ff;
+  --c-received: #f8f9fa;
 
   /* フォント */
-  --ff-body:  'Zen Maru Gothic', 'Hiragino Maru Gothic Pro', 'Yu Gothic', sans-serif;
+  --ff-body:
+    "Zen Maru Gothic", "Hiragino Maru Gothic Pro", "Yu Gothic", sans-serif;
 
   /* スペーシング */
-  --sp-xs:  0.25rem;
-  --sp-sm:  0.5rem;
-  --sp-md:  1rem;
-  --sp-lg:  1.5rem;
-  --sp-xl:  2rem;
+  --sp-xs: 0.25rem;
+  --sp-sm: 0.5rem;
+  --sp-md: 1rem;
+  --sp-lg: 1.5rem;
+  --sp-xl: 2rem;
   --sp-2xl: 3rem;
 
   /* 角丸 */
-  --r-sm:  4px;
-  --r-md:  8px;
-  --r-lg:  14px;
-  --r-xl:  20px;
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+  --r-xl: 20px;
 
   /* シャドウ */
-  --sh-sm:  0 1px 3px rgba(80,50,20,0.08);
-  --sh-md:  0 3px 10px rgba(80,50,20,0.1);
-  --sh-lg:  0 8px 24px rgba(80,50,20,0.12);
+  --sh-sm: 0 1px 3px rgba(80, 50, 20, 0.08);
+  --sh-md: 0 3px 10px rgba(80, 50, 20, 0.1);
+  --sh-lg: 0 8px 24px rgba(80, 50, 20, 0.12);
 
   /* レイアウト */
-  --max-w:  820px;
+  --max-w: 1000px;
 }
 
 /* ============================================================
    2. リセット & ベース
    ============================================================ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 html {
   font-size: 16px;
@@ -78,17 +85,37 @@ body {
   min-height: 100vh;
 }
 
-a { color: var(--c-primary); text-decoration: none; transition: color .15s; }
-a:hover { color: var(--c-primary-dk); }
+a {
+  color: var(--c-primary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+a:hover {
+  color: var(--c-primary-dk);
+}
 
-img { max-width: 100%; height: auto; vertical-align: middle; }
-input, textarea, select, button { font-family: inherit; font-size: inherit; }
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
 
 /* ============================================================
    3. ヘッダー
    ============================================================ */
 #head {
-  background: linear-gradient(135deg, var(--c-primary) 0%, var(--c-accent) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--c-primary) 0%,
+    var(--c-accent) 100%
+  );
   color: #fff;
   padding: var(--sp-lg) var(--sp-md);
   text-align: center;
@@ -98,8 +125,12 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   font-weight: 700;
   letter-spacing: 0.05em;
 }
-.main-ttl h1 a { color: #fff; }
-.main-ttl h1 a:hover { color: rgba(255,255,255,0.85); }
+.main-ttl h1 a {
+  color: #fff;
+}
+.main-ttl h1 a:hover {
+  color: rgba(255, 255, 255, 0.85);
+}
 
 /* ============================================================
    4. ナビゲーション
@@ -124,7 +155,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   font-size: 0.875rem;
   font-weight: 500;
   border-radius: var(--r-md);
-  transition: background .15s, color .15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   white-space: nowrap;
 }
 #menu a:hover {
@@ -158,58 +191,116 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
 .topic-container {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-sm);
+  gap: 8px; /* space between rows */
+  margin-top: 10px;
 }
 
-.thread-card {
+.thread-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-md);
-  padding: var(--sp-md) var(--sp-lg);
+  gap: 12px;
+  padding: 10px 16px;
   background: var(--c-card);
-  border-radius: var(--r-lg);
-  box-shadow: var(--sh-sm);
+  border-radius: var(--r-md);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  border-left: 3px solid transparent;
   color: var(--c-text);
-  transition: box-shadow .2s, transform .2s;
+  transition: all 0.2s ease;
+  min-width: 0;
 }
-.thread-card:hover {
-  box-shadow: var(--sh-md);
-  transform: translateY(-1px);
+.thread-row:hover {
+  background: #fafafa;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-left-color: var(--c-primary);
+  transform: translateX(2px);
   color: var(--c-text);
 }
 
-.thread-icon { font-size: 1.5rem; flex-shrink: 0; }
+.t-icon {
+  flex: 0 0 24px;
+  font-size: 1.2rem;
+  text-align: center;
+}
 
-.thread-content-row { flex: 1; min-width: 0; }
-.thread-content     { flex: 1; min-width: 0; }
-
-.thread-title {
-  display: block;
+.t-title {
+  flex: 1 1 auto;
+  min-width: 150px;
   font-weight: 700;
-  font-size: 1rem;
-  color: var(--c-text);
+  font-size: 1.05rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--c-text);
 }
 
-.thread-info-line {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-sm) var(--sp-md);
-  font-size: 0.8rem;
-  color: var(--c-text-sub);
-  margin-top: var(--sp-xs);
-}
-.meta-from b, .meta-last b { color: var(--c-text); font-weight: 500; }
-
-.thread-stats-compact {
-  flex-shrink: 0;
-  text-align: right;
+.t-from, .t-last {
+  flex: 0 0 120px;
   font-size: 0.85rem;
-  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--c-text-sub);
 }
-.res-count { color: var(--c-text-sub); white-space: nowrap; }
+.t-from::before { content: "From: "; font-size: 0.8em; color: #999; }
+.t-last::before { content: "Last: "; font-size: 0.8em; color: #999; }
+.t-from b, .t-last b { color: var(--c-text); font-weight: normal; }
+
+.t-date {
+  flex: 0 0 140px;
+  font-size: 0.85rem;
+  color: #888;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.t-stats {
+  flex: 0 0 70px;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.res-count {
+  color: var(--c-text-sub);
+  white-space: nowrap;
+}
+
+/* スマホ表示では折り返す */
+@media (max-width: 768px) {
+  .thread-row {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 12px;
+  }
+  .t-icon {
+    flex: 0 0 auto;
+  }
+  .t-title {
+    flex: 1 1 0;
+    width: calc(100% - 40px);
+  }
+  .t-from, .t-last {
+    flex: 1 1 45%;
+    font-size: 0.8rem;
+  }
+  .t-date {
+    flex: 1 1 100%;
+    text-align: left;
+    color: #aaa;
+    font-size: 0.8rem;
+  }
+  .t-stats {
+    flex: 0 0 auto;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 4px;
+    border-top: 1px dashed #eee;
+    padding-top: 6px;
+  }
+}
 
 /* バッジ */
 .badge-new {
@@ -226,10 +317,18 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
 }
 
 /* アイコン（CSSテキストアイコン） */
-.ico-fld_nor::before { content: "\1F4E8"; }
-.ico-fld_new::before { content: "\2728"; }
-.ico-fld_img::before { content: "\1F5BC"; }
-.ico-fld_lock::before { content: "\1F512"; }
+.ico-fld_nor::before {
+  content: "\1F4E8";
+}
+.ico-fld_new::before {
+  content: "\2728";
+}
+.ico-fld_img::before {
+  content: "\1F5BC";
+}
+.ico-fld_lock::before {
+  content: "\1F512";
+}
 
 .icon-list {
   font-size: 0.8rem;
@@ -238,7 +337,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   justify-content: center;
   gap: var(--sp-md);
 }
-.icon-list span { margin-right: 2px; }
+.icon-list span {
+  margin-right: 2px;
+}
 
 /* ============================================================
    8. スレッド閲覧 (read.html)
@@ -252,7 +353,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   margin-bottom: var(--sp-md);
   border-bottom: 1px solid var(--c-border-lt);
 }
-.bbs-navi a { margin-right: var(--sp-sm); }
+.bbs-navi a {
+  margin-right: var(--sp-sm);
+}
 .jump-btn {
   padding: var(--sp-xs) var(--sp-sm);
   background: var(--c-border-lt);
@@ -260,7 +363,10 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   font-size: 0.8rem;
   color: var(--c-text-sub);
 }
-.jump-btn:hover { background: var(--c-border); color: var(--c-text); }
+.jump-btn:hover {
+  background: var(--c-border);
+  color: var(--c-text);
+}
 
 /* 投稿カード */
 .post {
@@ -309,10 +415,20 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   color: var(--c-text);
   margin-bottom: var(--sp-xs);
 }
-.res-author { font-size: 0.85rem; }
-.res-date { font-size: 0.8rem; color: var(--c-text-sub); margin-left: var(--sp-xs); }
+.res-author {
+  font-size: 0.85rem;
+}
+.res-date {
+  font-size: 0.8rem;
+  color: var(--c-text-sub);
+  margin-left: var(--sp-xs);
+}
 
-.trip { color: var(--c-accent); font-size: 0.8rem; margin-left: var(--sp-xs); }
+.trip {
+  color: var(--c-accent);
+  font-size: 0.8rem;
+  margin-left: var(--sp-xs);
+}
 
 /* 返信アクション */
 .reply-actions {
@@ -320,22 +436,38 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   gap: var(--sp-sm);
   font-size: 0.8rem;
 }
-.btn-desk, .btn-quote {
+.btn-desk,
+.btn-quote {
   padding: var(--sp-xs) var(--sp-sm);
   border-radius: var(--r-md);
   background: var(--c-bg);
   color: var(--c-text-sub);
-  transition: background .15s, color .15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
-.btn-desk:hover { background: var(--c-secondary); color: #fff; }
-.btn-quote:hover { background: var(--c-primary); color: #fff; }
+.btn-desk:hover {
+  background: var(--c-secondary);
+  color: #fff;
+}
+.btn-quote:hover {
+  background: var(--c-primary);
+  color: #fff;
+}
+.btn-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 /* 本文 */
 .comment {
   line-height: 1.9;
   word-break: break-word;
 }
-.comment a { text-decoration: underline; }
+.comment a {
+  text-decoration: underline;
+}
 .comment blockquote {
   border-left: 3px solid var(--c-border);
   padding-left: var(--sp-md);
@@ -354,9 +486,11 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   border-radius: var(--r-md);
   box-shadow: var(--sh-sm);
   cursor: pointer;
-  transition: transform .2s;
+  transition: transform 0.2s;
 }
-.post-images img:hover { transform: scale(1.03); }
+.post-images img:hover {
+  transform: scale(1.03);
+}
 
 /* 編集リンク */
 .edit-link {
@@ -365,9 +499,11 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   right: var(--sp-md);
   font-size: 0.9rem;
   opacity: 0.4;
-  transition: opacity .15s;
+  transition: opacity 0.15s;
 }
-.edit-link:hover { opacity: 1; }
+.edit-link:hover {
+  opacity: 1;
+}
 
 /* ============================================================
    9. フォーム共通
@@ -385,7 +521,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   color: var(--c-text);
 }
 
-.bbsform { margin-top: var(--sp-md); }
+.bbsform {
+  margin-top: var(--sp-md);
+}
 
 .form-group {
   margin-bottom: var(--sp-md);
@@ -408,18 +546,25 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   border-radius: var(--r-md);
   background: var(--c-bg-warm);
   color: var(--c-text);
-  transition: border-color .15s, box-shadow .15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
   border-color: var(--c-primary);
-  box-shadow: 0 0 0 3px rgba(212,120,92,0.15);
+  box-shadow: 0 0 0 3px rgba(212, 120, 92, 0.15);
 }
-.form-group textarea { resize: vertical; min-height: 120px; }
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
 
-.field-error { border-color: var(--c-danger) !important; }
+.field-error {
+  border-color: var(--c-danger) !important;
+}
 
 .file-input-wrapper {
   margin-bottom: var(--sp-xs);
@@ -445,7 +590,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   border-radius: var(--r-lg);
   font-weight: 700;
   cursor: pointer;
-  transition: transform .15s, box-shadow .15s;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
   box-shadow: var(--sh-sm);
 }
 .submit-btn:hover {
@@ -462,9 +609,11 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   border-radius: var(--r-lg);
   font-weight: 500;
   cursor: pointer;
-  transition: transform .15s;
+  transition: transform 0.15s;
 }
-.btn-secondary:hover { transform: translateY(-1px); }
+.btn-secondary:hover {
+  transform: translateY(-1px);
+}
 
 .btn-outline {
   display: inline-block;
@@ -474,9 +623,11 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   border: 1px solid var(--c-border);
   border-radius: var(--r-lg);
   cursor: pointer;
-  transition: background .15s;
+  transition: background 0.15s;
 }
-.btn-outline:hover { background: var(--c-bg); }
+.btn-outline:hover {
+  background: var(--c-bg);
+}
 
 .btn-danger {
   display: inline-block;
@@ -487,14 +638,18 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   border-radius: var(--r-lg);
   font-weight: 500;
   cursor: pointer;
-  transition: opacity .15s;
+  transition: opacity 0.15s;
 }
-.btn-danger:hover { opacity: 0.85; }
+.btn-danger:hover {
+  opacity: 0.85;
+}
 
 /* ============================================================
    10. 検索 (find.html)
    ============================================================ */
-.hit-msg { color: var(--c-primary); }
+.hit-msg {
+  color: var(--c-primary);
+}
 .search-excerpt {
   font-size: 0.85rem;
   color: var(--c-text-sub);
@@ -502,6 +657,7 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -545,11 +701,53 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   right: 0;
   background: var(--c-card);
   border-top: 2px solid var(--c-primary);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   z-index: 200;
   max-height: 50vh;
   overflow-y: auto;
+  transition: transform 0.3s ease;
 }
+
+/* スプリットUIモード時の挙動 */
+body.desk-split-mode {
+  padding-left: 45%;
+}
+body.desk-split-mode .correspondesk-panel {
+  top: 0;
+  bottom: 0;
+  right: auto;
+  left: 0;
+  width: 45%;
+  max-height: 100vh;
+  border-top: none;
+  border-right: 2px solid var(--c-primary);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+  display: flex !important;
+  flex-direction: column;
+}
+body.desk-split-mode .desk-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* スマホ等小さい画面でのスプリットフォールバック（画面下半分固定） */
+@media (max-width: 800px) {
+  body.desk-split-mode {
+    padding-left: 0;
+    padding-bottom: 50vh;
+  }
+  body.desk-split-mode .correspondesk-panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 50vh;
+    border-right: none;
+    border-top: 2px solid var(--c-primary);
+  }
+}
+
 .desk-header {
   display: flex;
   justify-content: space-between;
@@ -560,7 +758,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   top: 0;
   background: var(--c-card);
 }
-.desk-header h3 { font-size: 1rem; }
+.desk-header h3 {
+  font-size: 1rem;
+}
 
 .desk-header-actions {
   display: flex;
@@ -576,9 +776,12 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   cursor: pointer;
   font-size: 0.85rem;
 }
-.btn-send-all:hover { background: var(--c-primary-dk); }
+.btn-send-all:hover {
+  background: var(--c-primary-dk);
+}
 
-.btn-clear-all, .btn-toggle-desk {
+.btn-clear-all,
+.btn-toggle-desk {
   padding: var(--sp-xs) var(--sp-sm);
   background: transparent;
   border: 1px solid var(--c-border);
@@ -587,11 +790,24 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   font-size: 0.85rem;
   color: var(--c-text-sub);
 }
-.btn-clear-all:hover, .btn-toggle-desk:hover { background: var(--c-bg); }
+.btn-clear-all:hover,
+.btn-toggle-desk:hover {
+  background: var(--c-bg);
+}
 
-.desk-content { padding: var(--sp-md) var(--sp-lg); }
-.desk-item-list { display: flex; flex-direction: column; gap: var(--sp-md); }
-.desk-empty-msg { text-align: center; color: var(--c-text-sub); font-size: 0.9rem; }
+.desk-content {
+  padding: var(--sp-md) var(--sp-lg);
+}
+.desk-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+.desk-empty-msg {
+  text-align: center;
+  color: var(--c-text-sub);
+  font-size: 0.9rem;
+}
 
 /* 記事閲覧内のデスク入力エリア */
 .desk-input-area {
@@ -601,21 +817,26 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   padding: var(--sp-md);
   margin: var(--sp-sm) 0;
 }
-.desk-field { margin-bottom: var(--sp-sm); }
+.desk-field {
+  margin-bottom: var(--sp-sm);
+}
 .desk-field label {
   display: block;
   font-size: 0.8rem;
   color: var(--c-text-sub);
   margin-bottom: 2px;
 }
-.desk-field input, .desk-textarea {
+.desk-field input,
+.desk-textarea {
   width: 100%;
   padding: var(--sp-xs) var(--sp-sm);
   border: 1px solid var(--c-border);
   border-radius: var(--r-sm);
   font-size: 0.9rem;
 }
-.desk-textarea { resize: vertical; }
+.desk-textarea {
+  resize: vertical;
+}
 .desk-actions {
   display: flex;
   gap: var(--sp-sm);
@@ -630,7 +851,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   cursor: pointer;
   font-size: 0.85rem;
 }
-.btn-save-desk:hover { opacity: 0.9; }
+.btn-save-desk:hover {
+  opacity: 0.9;
+}
 .btn-cancel-desk {
   padding: var(--sp-xs) var(--sp-md);
   background: transparent;
@@ -673,7 +896,9 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   color: var(--c-text-sub);
   margin-bottom: 2px;
 }
-.timeline-body { word-break: break-word; }
+.timeline-body {
+  word-break: break-word;
+}
 
 /* ============================================================
    13. ページネーション
@@ -700,9 +925,12 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   background: var(--c-card);
   color: var(--c-text);
   box-shadow: var(--sh-sm);
-  transition: background .15s;
+  transition: background 0.15s;
 }
-.pagination a:hover { background: var(--c-primary); color: #fff; }
+.pagination a:hover {
+  background: var(--c-primary);
+  color: #fff;
+}
 .pagination .current {
   background: var(--c-primary);
   color: #fff;
@@ -723,48 +951,103 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
   font-size: 0.9rem;
   z-index: 9999;
   transform: translateX(120%);
-  transition: transform .3s ease;
+  transition: transform 0.3s ease;
   box-shadow: var(--sh-lg);
 }
-.toast-show { transform: translateX(0); }
-.toast-error { background: var(--c-danger); }
+.toast-show {
+  transform: translateX(0);
+}
+.toast-error {
+  background: var(--c-danger);
+}
 
 /* ============================================================
    15. ユーティリティクラス
    ============================================================ */
-.text-center { text-align: center; }
-.fw-bold     { font-weight: 700; }
-.mt-1 { margin-top: var(--sp-md); }
-.mt-2 { margin-top: var(--sp-lg); }
-.mt-3 { margin-top: var(--sp-xl); }
-.mb-1 { margin-bottom: var(--sp-md); }
-.mb-2 { margin-bottom: var(--sp-lg); }
+.text-center {
+  text-align: center;
+}
+.fw-bold {
+  font-weight: 700;
+}
+.mt-1 {
+  margin-top: var(--sp-md);
+}
+.mt-2 {
+  margin-top: var(--sp-lg);
+}
+.mt-3 {
+  margin-top: var(--sp-xl);
+}
+.mb-1 {
+  margin-bottom: var(--sp-md);
+}
+.mb-2 {
+  margin-bottom: var(--sp-lg);
+}
 
 /* ============================================================
    16. レスポンシブ
    ============================================================ */
 @media (max-width: 600px) {
-  :root { --max-w: 100%; }
+  :root {
+    --max-w: 100%;
+  }
 
-  #head { padding: var(--sp-md) var(--sp-sm); }
-  .main-ttl h1 { font-size: 1.2rem; }
+  #head {
+    padding: var(--sp-md) var(--sp-sm);
+  }
+  .main-ttl h1 {
+    font-size: 1.2rem;
+  }
 
-  #menu { gap: var(--sp-xs); padding: var(--sp-xs) var(--sp-sm); }
-  #menu a { font-size: 0.8rem; padding: var(--sp-xs); }
+  #menu {
+    gap: var(--sp-xs);
+    padding: var(--sp-xs) var(--sp-sm);
+  }
+  #menu a {
+    font-size: 0.8rem;
+    padding: var(--sp-xs);
+  }
 
-  .main { padding: var(--sp-md) var(--sp-sm) var(--sp-xl); }
+  .main {
+    padding: var(--sp-md) var(--sp-sm) var(--sp-xl);
+  }
 
-  .thread-card { padding: var(--sp-sm) var(--sp-md); gap: var(--sp-sm); }
-  .thread-title { font-size: 0.9rem; }
-  .thread-info-line { font-size: 0.75rem; }
+  .thread-card {
+    padding: var(--sp-sm) var(--sp-md);
+    gap: var(--sp-sm);
+  }
+  .thread-title {
+    font-size: 0.9rem;
+  }
+  .thread-info-line {
+    font-size: 0.75rem;
+  }
 
-  .post { padding: var(--sp-md); }
-  .art-meta-flex { flex-direction: column; gap: var(--sp-xs); align-items: flex-start; }
-  .reply-actions { margin-top: var(--sp-xs); }
+  .post {
+    padding: var(--sp-md);
+  }
+  .art-meta-flex {
+    flex-direction: column;
+    gap: var(--sp-xs);
+    align-items: flex-start;
+  }
+  .reply-actions {
+    margin-top: var(--sp-xs);
+  }
 
-  .form-container { padding: var(--sp-md); }
+  .form-container {
+    padding: var(--sp-md);
+  }
 
-  .correspondesk-panel { max-height: 60vh; }
-  .desk-header { padding: var(--sp-xs) var(--sp-sm); }
-  .desk-content { padding: var(--sp-sm); }
+  .correspondesk-panel {
+    max-height: 60vh;
+  }
+  .desk-header {
+    padding: var(--sp-xs) var(--sp-sm);
+  }
+  .desk-content {
+    padding: var(--sp-sm);
+  }
 }

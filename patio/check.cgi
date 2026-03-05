@@ -11,6 +11,7 @@ use warnings;
 use utf8;
 
 print "Content-Type: text/html; charset=utf-8\n\n";
+binmode STDOUT, ":utf8";
 
 print <<'HTML_HEAD';
 <!DOCTYPE html>

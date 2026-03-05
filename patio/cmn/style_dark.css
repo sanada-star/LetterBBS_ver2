@@ -1,0 +1,60 @@
+@charset "UTF-8";
+/*
+ * LetterBBS ver2 — Dark テーマ
+ * 黒背景に濃い赤を用いたダークなデザイン
+ */
+
+@import url('style.css');
+
+:root {
+  /* カラーパレット (Dark: Black & Deep Red) */
+  --c-bg:         #0a0a0a;
+  --c-bg-warm:    #121212;
+  --c-card:       #1a1a1a;
+  --c-text:       #e0e0e0;
+  --c-text-sub:   #888888;
+  --c-primary:    #b30000;
+  --c-primary-dk: #800000;
+  --c-secondary:  #4d4d4d;
+  --c-accent:     #ff3333;
+  --c-border:     #333333;
+  --c-border-lt:  #222222;
+  --c-danger:     #ff4444;
+  --c-info:       #4444ff;
+  --c-warn:       #ffaa00;
+
+  /* タイムライン */
+  --c-sent:       #2e0b0b;
+  --c-received:   #222222;
+
+  /* フォント (Sleek sans-serif) */
+  --ff-body:  'Inter', 'Helvetica Neue', 'Arial', sans-serif;
+  
+  /* シャドウ (Dark mode) */
+  --sh-sm:  0 1px 3px rgba(0,0,0,0.6);
+  --sh-md:  0 3px 10px rgba(0,0,0,0.8);
+  --sh-lg:  0 8px 24px rgba(0,0,0,0.9);
+}
+
+/* ダークなデザイン特有の調整 */
+#head {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+  border-bottom: 2px solid var(--c-primary);
+}
+
+.badge-new {
+  background: var(--c-primary);
+  color: #ffffff;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, var(--c-primary-dk), var(--c-primary));
+}
+
+a {
+  color: var(--c-accent);
+}
+a:hover {
+  text-decoration: underline;
+  color: #ff6666;
+}

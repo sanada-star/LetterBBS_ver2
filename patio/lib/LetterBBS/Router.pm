@@ -85,9 +85,11 @@ sub dispatch {
 
     eval { $ctrl->$method() };
     if ($@) {
-        warn "[LetterBBS] dispatch error ($action): $@";
+        require Encode;
+        my $err = Encode::encode_utf8($@);
+        warn "[LetterBBS] dispatch error ($action): $err";
         $self->_error_page("内部エラーが発生しました。") unless $self->{config}->get('debug');
-        $self->_error_page("エラー: $@") if $self->{config}->get('debug');
+        $self->_error_page("エラー: $err") if $self->{config}->get('debug');
     }
 }
 
@@ -116,7 +118,8 @@ sub dispatch_api {
 
     eval { $ctrl->$method() };
     if ($@) {
-        warn "[LetterBBS] API error ($api_action): $@";
+        require Encode;
+        warn "[LetterBBS] API error ($api_action): " . Encode::encode_utf8($@);
         $self->_json_error("内部エラーが発生しました。", "SERVER_ERROR");
     }
 }
@@ -156,7 +159,8 @@ sub dispatch_admin {
 
     eval { $ctrl->$method() };
     if ($@) {
-        warn "[LetterBBS] admin error ($action): $@";
+        require Encode;
+        warn "[LetterBBS] admin error ($action): " . Encode::encode_utf8($@);
         $self->_error_page("内部エラーが発生しました。");
     }
 }
@@ -173,8 +177,12 @@ sub _error_page {
         page_title    => 'エラー',
     );
     print "Content-Type: text/html; charset=utf-8\n";
-    print $self->{session}->cookie_header() . "\n" if $self->{session}->cookie_header();
+    if (my $cookie = $self->{session}->cookie_header()) {
+        $cookie = "Set-Cookie: " . $cookie unless $cookie =~ /^Set-Cookie:/i;
+        print "$cookie\n";
+    }
     print "\n";
+    binmode STDOUT, ":utf8";
     print $html;
 }
 
