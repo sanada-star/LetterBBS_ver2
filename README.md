@@ -184,14 +184,42 @@ patio/
 
 用意されている主要なスタイルは以下の通りです。
 
-- **standard**: デフォルトの落ち着いたデザイン
-- **gloomy**: ダークトーンの静かな雰囲気の設定
-- **simple**: 最低限の装飾で読みやすさを重視した表示
-- **fox**: その他カスタムデモ
+- **Default**: 白背景の定番スタイル
+- **cool**: 黒と青を基調としたクールなスタイル
+- **Dark**: 黒背景に濃い赤のダークスタイル
+- **punk**: サイバーパンクカラーなネオンスタイル
+- **fox**: 狐をモチーフにした和テーマ
 
 CSSなどを直接編集してオリジナルのスタイルを作りたい場合は、`cmn/css/` 内の各種設定や、`tmpl/` ディレクトリ配下のHTMLファイルを調整してください。
 
 ---
+
+## スクリーンショット
+
+**Default**: デザイン画面
+<img width="1127" height="898" alt="image" src="https://github.com/user-attachments/assets/cfc0ae6a-019b-4fe0-a8d5-a19ebc01e81a" />
+**cool**: デザイン画面
+<img width="999" height="880" alt="image" src="https://github.com/user-attachments/assets/f17c0da2-ddf3-4281-ae22-520afa3d35bb" />
+**Dark**: デザイン画面
+<img width="1060" height="843" alt="image" src="https://github.com/user-attachments/assets/cfca5352-b38f-44ed-84a5-722f3b31f3df" />
+**punk**: デザイン画面
+<img width="1040" height="893" alt="image" src="https://github.com/user-attachments/assets/b84c3ada-67c1-4a70-9e71-449a4c715dd2" />
+**fox**: デザイン画面
+<img width="1071" height="896" alt="image" src="https://github.com/user-attachments/assets/eed23c3f-b7b7-42be-a3b9-a992beb431c2" />
+
+**画像添付表示イメージ**
+<img width="1055" height="540" alt="image" src="https://github.com/user-attachments/assets/7a93932b-d1fc-4374-bfb2-7fc588a7cfc0" />
+
+**個別スレッドイメージ**
+<img width="865" height="907" alt="image" src="https://github.com/user-attachments/assets/e0577c10-621c-45d2-9d6a-f682bc1cea2a" />
+
+**タイムラインイメージ**
+<img width="1008" height="891" alt="image" src="https://github.com/user-attachments/assets/f7512b9f-a737-4532-ab65-526068e8a977" />
+
+*使い方マニュアルイメージ*
+<img width="888" height="820" alt="image" src="https://github.com/user-attachments/assets/deec2a0a-159b-47f2-afc6-6fb55da2bfb5" />
+
+
 
 ## 免責事項・お問い合わせ
 
