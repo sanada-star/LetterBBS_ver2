@@ -16,3 +16,7 @@ patio/init.cgi
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Exclude repository documentation and main database
+docs/
+letterbbs.db
