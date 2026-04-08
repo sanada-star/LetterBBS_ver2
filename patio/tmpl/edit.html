@@ -28,7 +28,13 @@
       <label>添付画像</label>
       <div class="post-images">
         <!-- loop:images -->
-        <img src="<!-- var:upl_url -->/<!-- var:filename -->" width="100" alt="添付画像">
+        <div class="attached-image-item">
+          <img src="<!-- var:upl_url -->/<!-- var:filename -->" width="100" alt="添付画像">
+          <label>
+            <input type="checkbox" name="delete_image_ids" value="<!-- raw:id -->">
+            この画像を削除
+          </label>
+        </div>
         <!-- /loop:images -->
       </div>
     </div>
@@ -41,7 +47,7 @@
   </form>
 
   <div class="mt-2">
-    <form action="<!-- var:cgi_url -->" method="post" onsubmit="return confirm('本当に削除しますか？この操作は取り消せません。');">
+    <form action="<!-- var:cgi_url -->" method="post" onsubmit="return confirm('本当に削除しますか？この投稿の内容も取り消せません。');">
       <input type="hidden" name="mode" value="delete">
       <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
       <input type="hidden" name="seq" value="<!-- raw:seq -->">

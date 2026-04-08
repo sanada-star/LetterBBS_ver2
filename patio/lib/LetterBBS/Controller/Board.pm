@@ -40,6 +40,11 @@ sub list {
 
     # 各スレッドにアイコン情報を付加
     for my $t (@$threads) {
+        my ($parent) = $self->{post_m}->list_by_thread($t->{id}, page => 1, per_page => 1);
+        my $parent_images = ($parent && $parent->{id})
+            ? $self->{post_m}->get_images($parent->{id})
+            : [];
+        $t->{list_has_image} = (@$parent_images ? 1 : 0);
         $t->{icon} = $self->_thread_icon($t);
         $t->{display_date} = _format_date($t->{updated_at});
         $t->{is_new} = _is_new($t->{updated_at}) ? 1 : 0;
@@ -122,6 +127,11 @@ sub past {
     my $total_pages = int(($total + $per_page - 1) / $per_page);
 
     for my $t (@$threads) {
+        my ($parent) = $self->{post_m}->list_by_thread($t->{id}, page => 1, per_page => 1);
+        my $parent_images = ($parent && $parent->{id})
+            ? $self->{post_m}->get_images($parent->{id})
+            : [];
+        $t->{list_has_image} = (@$parent_images ? 1 : 0);
         $t->{icon} = $self->_thread_icon($t);
         $t->{display_date} = _format_date($t->{updated_at});
     }
@@ -142,12 +152,16 @@ sub past {
 
 sub _common_vars {
     my ($self) = @_;
+    my $csrf_token = LetterBBS::Auth::generate_csrf_token(
+        $self->{session}->id(), $self->{config}->get('csrf_secret')
+    );
     return (
         bbs_title  => $self->{config}->get('bbs_title') || '',
         css_url    => $self->{config}->css_url() || '',
         cgi_url    => $self->{config}->get('cgi_url') || '',
         api_url    => $self->{config}->get('api_url') || '',
         admin_url  => $self->{config}->get('admin_url') || '',
+        csrf_token => $csrf_token,
         image_upl  => $self->{config}->get('image_upl') || 0,
     );
 }
@@ -171,7 +185,7 @@ sub _output_html {
 sub _thread_icon {
     my ($self, $t) = @_;
     return 'fld_lock' if $t->{is_locked};
-    return 'fld_img'  if $t->{has_image};
+    return 'fld_img'  if $t->{list_has_image};
     return 'fld_new'  if _is_new($t->{updated_at});
     return 'fld_nor';
 }

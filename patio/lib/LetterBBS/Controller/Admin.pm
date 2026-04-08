@@ -181,6 +181,13 @@ sub thread_exec {
         for my $target_id (@ids) {
             $self->{thread_m}->destroy($target_id, $self->{config}->get('upl_dir'));
         }
+    } elsif ($action eq 'toggle_lock') {
+        for my $target_id (@ids) {
+            my $thread = $self->{thread_m}->find($target_id);
+            next unless $thread;
+            my $next = $thread->{is_locked} ? 0 : 1;
+            $self->{thread_m}->update($target_id, is_locked => $next);
+        }
     } elsif ($action eq 'lock') {
         for my $target_id (@ids) {
             $self->{thread_m}->update($target_id, is_locked => 1);
@@ -263,10 +270,17 @@ sub settings {
     return $self->_require_login() unless $self->{session}->get('admin_login');
 
     my $all = $self->{setting_m}->get_all();
+    my $authkey = exists $all->{authkey} ? $all->{authkey} : ($self->{config}->get('authkey') || '0');
+    my $image_upl = exists $all->{image_upl} ? $all->{image_upl} : ($self->{config}->get('image_upl') || '0');
     my $html = $self->{template}->render('admin/settings.html',
         $self->_admin_vars(),
         page_title => '設定',
-        settings   => $all,
+        message      => ($self->{cgi}->param('saved') ? '設定を保存しました。' : ''),
+        settings     => $all,
+        authkey_on   => ($authkey eq '1' ? 1 : 0),
+        authkey_off  => ($authkey eq '1' ? 0 : 1),
+        image_upl_on  => ($image_upl eq '1' ? 1 : 0),
+        image_upl_off => ($image_upl eq '1' ? 0 : 1),
         %$all,
     );
     $self->_output_html($html);
@@ -285,14 +299,16 @@ sub settings_exec {
 
     my %save;
     for my $key (qw(bbs_title i_max p_max m_max pg_max pgmax_now pgmax_past authkey authtime image_upl use_captcha wait max_failpass lock_days)) {
-        my $val = LetterBBS::Sanitize::sanitize_input($cgi->param($key) || '');
+        my $raw = $cgi->param($key);
+        next unless defined $raw;
+        my $val = LetterBBS::Sanitize::sanitize_input($raw);
         $save{$key} = $val if $val ne '';
     }
     $self->{setting_m}->set_bulk(%save) if %save;
     $self->{config}->load_db_settings($self->{db});
 
     print "Status: 302 Found\n";
-    print "Location: " . $self->{config}->get('admin_url') . "?action=settings\n";
+    print "Location: " . $self->{config}->get('admin_url') . "?action=settings&saved=1\n";
     print $self->{session}->cookie_header() . "\n" if $self->{session}->cookie_header();
     print "\n";
 }

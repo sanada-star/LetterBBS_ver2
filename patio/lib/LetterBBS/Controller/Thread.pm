@@ -9,6 +9,7 @@ use warnings;
 use utf8;
 use LetterBBS::Sanitize;
 use LetterBBS::Auth;
+use LetterBBS::Captcha;
 use LetterBBS::Upload;
 use LetterBBS::Model::Thread;
 use LetterBBS::Model::Post;
@@ -133,51 +134,10 @@ sub form {
     my ($self) = @_;
     my $thread_id = LetterBBS::Sanitize::to_uint($self->{cgi}->param('id'));
     my $quote_seq = LetterBBS::Sanitize::to_uint($self->{cgi}->param('quote'));
-
-    my $thread = undef;
-    my $quote_body = '';
-
-    if ($thread_id) {
-        $thread = $self->{thread_m}->find($thread_id);
-        return $self->_error('スレッドが見つかりません。') unless $thread;
-        return $self->_error('このスレッドはロックされています。') if $thread->{is_locked};
-
-        # 引用（クロススレッド対応: quote_from で引用元スレッドを指定可能）
-        if ($quote_seq) {
-            my $quote_from = LetterBBS::Sanitize::to_uint($self->{cgi}->param('quote_from'));
-            my $source_thread = $quote_from || $thread_id;
-            my $quote_post = $self->{post_m}->find_by_thread_seq($source_thread, $quote_seq);
-            if ($quote_post && !$quote_post->{is_deleted}) {
-                my $body = LetterBBS::Sanitize::html_unescape($quote_post->{body});
-                $body =~ s/<br>/\n/g;
-                $quote_body = join("\n", map { "> $_" } split(/\n/, $body));
-            }
-        }
-    }
-
-    my $csrf_token = LetterBBS::Auth::generate_csrf_token(
-        $self->{session}->id(), $self->{config}->get('csrf_secret')
+    return $self->_render_form(
+        thread_id => $thread_id,
+        quote_seq => $quote_seq,
     );
-
-    # クッキーから前回の入力値を復元
-    my $cookie_name  = $self->_get_cookie('letterbbs_name');
-    my $cookie_email = $self->_get_cookie('letterbbs_email');
-
-    my $html = $self->{template}->render_with_layout('form.html',
-        $self->_common_vars(),
-        page_title     => $thread ? '返信: ' . $thread->{subject} : '新規投稿',
-        thread_subject => $thread ? $thread->{subject} : '',
-        thread         => $thread,
-        thread_id      => $thread_id || 0,
-        is_reply       => $thread_id ? 1 : 0,
-        csrf_token     => $csrf_token,
-        form_name      => $cookie_name,
-        form_email     => $cookie_email,
-        form_body      => $quote_body,
-        image_upl      => $self->{config}->get('image_upl'),
-        use_captcha    => $self->{config}->get('use_captcha'),
-    );
-    $self->_output_html($html);
 }
 
 # 投稿実行
@@ -199,6 +159,26 @@ sub post {
     my $body    = LetterBBS::Sanitize::sanitize_input($cgi->param('body') || '');
     my $pwd     = $cgi->param('pwd') || '';
     my $url     = LetterBBS::Sanitize::sanitize_input($cgi->param('url') || '');
+
+    if (($self->{config}->get('use_captcha') || '0') eq '1') {
+        my $captcha = LetterBBS::Captcha->new($self->{config});
+        my $captcha_code = LetterBBS::Sanitize::sanitize_input($cgi->param('captcha_code') || '');
+        my $captcha_token = $cgi->param('captcha_token') || '';
+        my $captcha_result = $captcha->verify($captcha_code, $captcha_token);
+        if ($captcha_result != 1) {
+            my $message = ($captcha_result == 0)
+                ? 'CAPTCHAの有効期限が切れました。もう一度入力してください。'
+                : 'CAPTCHAが一致しません。もう一度入力してください。';
+            return $self->_render_form(
+                thread_id     => $thread_id,
+                form_name     => $name,
+                form_email    => $email,
+                form_subject  => $subject,
+                form_body     => $body,
+                error_message => $message,
+            );
+        }
+    }
 
     # バリデーション
     return $self->_error('名前を入力してください。') if $name eq '';
@@ -392,6 +372,8 @@ sub edit_form {
         thread_id   => $thread_id,
         seq         => $seq,
         post        => $post,
+        post_subject => ($post->{subject} || ''),
+        post_author  => ($post->{author} || ''),
         edit_body   => $edit_body,
         images      => $images,
         csrf_token  => $new_csrf,
@@ -423,6 +405,28 @@ sub edit_exec {
     return $self->_error('記事が見つかりません。') unless $post;
     return $self->_error('パスワードが正しくありません。') unless LetterBBS::Auth::verify_password($pwd, $post->{password});
 
+    my @delete_image_ids = map { LetterBBS::Sanitize::to_uint($_) } $cgi->param('delete_image_ids');
+    if (@delete_image_ids) {
+        my $images = $self->{post_m}->get_images($post->{id});
+        my %allowed = map { $_->{id} => $_ } @$images;
+        my $uploader = LetterBBS::Upload->new(
+            upl_dir => $self->{config}->get('upl_dir'),
+        );
+
+        for my $image_id (@delete_image_ids) {
+            next unless $image_id && $allowed{$image_id};
+            my $img = $self->{post_m}->delete_image($image_id);
+            next unless $img;
+            $uploader->delete_file($img->{filename});
+        }
+
+        my ($remaining_images) = $self->{db}->dbh->selectrow_array(
+            "SELECT COUNT(*) FROM post_images pi JOIN posts p ON p.id = pi.post_id WHERE p.thread_id = ? AND p.is_deleted = 0",
+            undef, $thread_id
+        );
+        $self->{thread_m}->update($thread_id, has_image => ($remaining_images ? 1 : 0));
+    }
+
     my $escaped_body = LetterBBS::Sanitize::html_escape($body);
     $self->{post_m}->update($post->{id}, subject => $subject, body => $escaped_body);
 
@@ -452,15 +456,31 @@ sub delete {
     return $self->_error('パスワードが正しくありません。') unless LetterBBS::Auth::verify_password($pwd, $post->{password});
 
     # 画像ファイル削除
-    my $images = $self->{post_m}->get_images($post->{id});
     my $uploader = LetterBBS::Upload->new(
         upl_dir => $self->{config}->get('upl_dir'),
     );
-    for my $img (@$images) {
-        $uploader->delete_file($img->{filename});
+    if (($post->{seq_no} || 0) == 0) {
+        my ($parent, $replies) = $self->{post_m}->list_by_thread(
+            $thread_id,
+            page            => 1,
+            per_page        => 999999,
+            include_deleted => 1,
+        );
+        my @posts = grep { $_ } ($parent, @$replies);
+        for my $thread_post (@posts) {
+            my $images = $self->{post_m}->get_images($thread_post->{id});
+            for my $img (@$images) {
+                $uploader->delete_file($img->{filename});
+            }
+        }
+        $self->{thread_m}->delete($thread_id);
+    } else {
+        my $images = $self->{post_m}->get_images($post->{id});
+        for my $img (@$images) {
+            $uploader->delete_file($img->{filename});
+        }
+        $self->{post_m}->soft_delete($post->{id});
     }
-
-    $self->{post_m}->soft_delete($post->{id});
 
     my $redirect_url = ($self->{config}->get('cgi_url') || '') . "?mode=read&id=$thread_id";
     print "Status: 302 Found\n";
@@ -658,14 +678,81 @@ HTML
     return $html;
 }
 
+sub _render_form {
+    my ($self, %args) = @_;
+    my $thread_id = LetterBBS::Sanitize::to_uint($args{thread_id});
+    my $quote_seq = LetterBBS::Sanitize::to_uint($args{quote_seq});
+
+    my $thread = undef;
+    my $quote_body = '';
+
+    if ($thread_id) {
+        $thread = $self->{thread_m}->find($thread_id);
+        return $self->_error('スレッドが見つかりません。') unless $thread;
+        return $self->_error('このスレッドはロックされています。') if $thread->{is_locked};
+
+        if ($quote_seq) {
+            my $quote_from = LetterBBS::Sanitize::to_uint($self->{cgi}->param('quote_from'));
+            my $source_thread = $quote_from || $thread_id;
+            my $quote_post = $self->{post_m}->find_by_thread_seq($source_thread, $quote_seq);
+            if ($quote_post && !$quote_post->{is_deleted}) {
+                my $body = LetterBBS::Sanitize::html_unescape($quote_post->{body});
+                $body =~ s/<br>/\n/g;
+                $quote_body = join("\n", map { "> $_" } split(/\n/, $body));
+            }
+        }
+    }
+
+    my $csrf_token = LetterBBS::Auth::generate_csrf_token(
+        $self->{session}->id(), $self->{config}->get('csrf_secret')
+    );
+
+    my $cookie_name  = $self->_get_cookie('letterbbs_name');
+    my $cookie_email = $self->_get_cookie('letterbbs_email');
+    my $captcha_enabled = (($self->{config}->get('use_captcha') || '0') eq '1') ? 1 : 0;
+    my $captcha_token = '';
+    my $captcha_url = '';
+
+    if ($captcha_enabled) {
+        my $captcha = LetterBBS::Captcha->new($self->{config});
+        my $result = $captcha->generate();
+        $captcha_token = $result->{token} || '';
+        $captcha_url = './captcha.cgi?token=' . $captcha_token;
+    }
+
+    my $html = $self->{template}->render_with_layout('form.html',
+        $self->_common_vars(),
+        page_title      => $thread ? '返信: ' . $thread->{subject} : '新規投稿',
+        thread_subject  => $thread ? $thread->{subject} : '',
+        thread          => $thread,
+        thread_id       => $thread_id || 0,
+        is_reply        => $thread_id ? 1 : 0,
+        csrf_token      => $csrf_token,
+        form_name       => defined $args{form_name} ? $args{form_name} : $cookie_name,
+        form_email      => defined $args{form_email} ? $args{form_email} : $cookie_email,
+        form_subject    => defined $args{form_subject} ? $args{form_subject} : '',
+        form_body       => defined $args{form_body} ? $args{form_body} : $quote_body,
+        error_message   => $args{error_message} || '',
+        image_upl       => $self->{config}->get('image_upl'),
+        use_captcha     => $captcha_enabled,
+        captcha_token   => $captcha_token,
+        captcha_url     => $captcha_url,
+    );
+    $self->_output_html($html);
+}
+
 sub _common_vars {
     my ($self) = @_;
+    my $csrf_token = LetterBBS::Auth::generate_csrf_token(
+        $self->{session}->id(), $self->{config}->get('csrf_secret')
+    );
     return (
         bbs_title  => $self->{config}->get('bbs_title') || '',
         css_url    => $self->{config}->css_url() || '',
         cgi_url    => $self->{config}->get('cgi_url') || '',
         api_url    => $self->{config}->get('api_url') || '',
         admin_url  => $self->{config}->get('admin_url') || '',
+        csrf_token => $csrf_token,
     );
 }
 

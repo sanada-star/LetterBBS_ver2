@@ -10,11 +10,20 @@
     <input type="hidden" name="mode" value="post">
     <input type="hidden" name="thread_id" value="<!-- raw:thread_id -->">
     <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+    <!-- if:use_captcha -->
+    <input type="hidden" name="captcha_token" value="<!-- var:captcha_token -->">
+    <!-- /if:use_captcha -->
 
     <div class="bbsform">
+      <!-- if:error_message -->
+      <div class="form-group">
+        <p style="margin:0; color:#b00020; font-weight:bold;"><!-- var:error_message --></p>
+      </div>
+      <!-- /if:error_message -->
+
       <div class="form-group">
         <label>件名</label>
-        <input type="text" name="subject" placeholder="用件を記入してください" value="">
+        <input type="text" name="subject" placeholder="用件を記入してください" value="<!-- var:form_subject -->">
       </div>
       <div class="form-group">
         <label>名前</label>
@@ -44,6 +53,17 @@
         <label>削除用パスワード</label>
         <input type="password" name="pwd" maxlength="8">
       </div>
+
+      <!-- if:use_captcha -->
+      <div class="form-group">
+        <label>CAPTCHA</label>
+        <div style="margin-bottom:0.75rem;">
+          <img src="<!-- var:captcha_url -->" alt="CAPTCHA" style="display:block; max-width:120px; height:auto; border:1px solid rgba(0,0,0,0.15); border-radius:6px; background:#f4efe6;">
+        </div>
+        <input type="text" name="captcha_code" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="画像の数字を入力">
+        <p style="margin:0.5rem 0 0; font-size:0.9rem; color:var(--c-text-sub);">読みにくい場合は画像を再読み込みすると更新されます。</p>
+      </div>
+      <!-- /if:use_captcha -->
     </div>
 
     <div class="submit-btn-area">

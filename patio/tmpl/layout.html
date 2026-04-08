@@ -16,6 +16,7 @@
 </header>
 
 <nav id="menu">
+  <a href="javascript:void(0)" onclick="LB.Desk.togglePanel(true); return false;">&#9993; 文通デスク <span id="desk-badge" style="display:none;"></span></a>
   <a href="<!-- var:cgi_url -->?mode=form">&#128231; 新規スレッド</a>
   <a href="<!-- var:cgi_url -->?mode=manual" class="menu-manual">&#128214; 使い方</a>
   <a href="<!-- var:cgi_url -->?mode=note">&#9888; 留意事項</a>
@@ -28,6 +29,37 @@
 <main class="main">
 <!-- raw:content -->
 </main>
+
+<div id="correspondeskPanel" class="correspondesk-panel" style="display: none">
+  <div class="desk-header">
+    <h3>&#9993;&#65039; 文通デスク</h3>
+    <div class="desk-header-actions">
+      <button onclick="LB.Desk.sendAll()" class="btn-send-all">
+        &#128640; 一括送信
+      </button>
+      <button onclick="LB.Desk.clearAll()" class="btn-clear-all">
+        全てクリア
+      </button>
+      <button onclick="LB.Desk.togglePanel(false)" class="btn-toggle-desk">
+        &#10006; 閉じる
+      </button>
+    </div>
+  </div>
+  <div class="desk-content">
+    <div id="deskItemList" class="desk-item-list"></div>
+    <p class="desk-empty-msg" id="deskEmptyMsg">
+      下書きがストックされていません。
+    </p>
+  </div>
+</div>
+
+<script>
+  window.LB_CONFIG = Object.assign({}, window.LB_CONFIG || {}, {
+    apiUrl: '<!-- var:api_url -->',
+    cgiUrl: '<!-- var:cgi_url -->',
+    csrfToken: '<!-- var:csrf_token -->'
+  });
+</script>
 
 <footer id="foot">
   <p>Modified by <a href="https://github.com/sanada-star" target="_blank" rel="noopener">sanada</a> / Original BBS script by <a href="https://www.kent-web.com/" target="_blank" rel="noopener">KENT-WEB</a></p>
