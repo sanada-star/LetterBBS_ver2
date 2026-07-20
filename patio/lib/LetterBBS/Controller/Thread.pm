@@ -452,15 +452,19 @@ sub delete {
     return $self->_error('パスワードが正しくありません。') unless LetterBBS::Auth::verify_password($pwd, $post->{password});
 
     # 画像ファイル削除
-    my $images = $self->{post_m}->get_images($post->{id});
-    my $uploader = LetterBBS::Upload->new(
-        upl_dir => $self->{config}->get('upl_dir'),
-    );
-    for my $img (@$images) {
-        $uploader->delete_file($img->{filename});
-    }
+    if (($post->{seq_no} || 0) == 0) {
+        $self->{thread_m}->delete($thread_id);
+    } else {
+        my $images = $self->{post_m}->get_images($post->{id});
+        my $uploader = LetterBBS::Upload->new(
+            upl_dir => $self->{config}->get('upl_dir'),
+        );
+        for my $img (@$images) {
+            $uploader->delete_file($img->{filename});
+        }
 
-    $self->{post_m}->soft_delete($post->{id});
+        $self->{post_m}->soft_delete($post->{id});
+    }
 
     my $redirect_url = ($self->{config}->get('cgi_url') || '') . "?mode=read&id=$thread_id";
     print "Status: 302 Found\n";
