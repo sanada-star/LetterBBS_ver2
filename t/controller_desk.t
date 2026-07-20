@@ -3,9 +3,11 @@ use warnings;
 use utf8;
 use Test::More;
 use JSON::PP;
+use Encode qw(decode);
 use lib 'patio/lib';
 use LetterBBS::Auth;
 use LetterBBS::Controller::Desk;
+use LetterBBS::Template;
 
 binmode STDERR, ':encoding(UTF-8)';
 binmode STDOUT, ':encoding(UTF-8)';
@@ -91,6 +93,17 @@ binmode STDOUT, ':encoding(UTF-8)';
         $self->{file} = $file;
         $self->{vars} = { @vars };
         return 'rendered desk';
+    }
+}
+
+{
+    package Local::RenderingDeskTemplate;
+    use parent 'LetterBBS::Template';
+
+    sub render_with_layout {
+        my ($self, $file, @vars) = @_;
+        $self->{last_vars} = { @vars };
+        return $self->SUPER::render_with_layout($file, @vars);
     }
 }
 
@@ -186,6 +199,27 @@ subtest 'show passes saved session drafts to the desk template' => sub {
         'preserves draft fields and adds desk display fields',
     );
     like($output, qr/Content-Type: text\/html/, 'outputs the rendered response');
+};
+
+subtest 'show renders the empty state without batch-send controls' => sub {
+    my $template = Local::RenderingDeskTemplate->new('patio/tmpl');
+    my $controller = make_controller(
+        draft_m  => Local::DeskDraftModel->new([]),
+        template => $template,
+    );
+
+    my $output = '';
+    open my $stdout, '>', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->show();
+    }
+    close $stdout or die $!;
+    $output = decode('UTF-8', $output);
+
+    is($template->{last_vars}{draft_count}, 0, 'passes a zero draft count');
+    like($output, qr/下書きはありません。/, 'shows the empty-state message');
+    unlike($output, qr/一括送信/, 'hides batch-send text and buttons');
 };
 
 subtest 'api_send shares one secure password hash across a valid batch' => sub {

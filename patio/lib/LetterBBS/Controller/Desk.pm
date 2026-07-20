@@ -50,7 +50,7 @@ sub show {
         admin_url  => $self->{config}->get('admin_url') || '',
         page_title => '文通デスク',
         csrf_token => $csrf_token,
-        drafts      => $drafts,
+        drafts      => @$drafts ? $drafts : '',
         draft_count => scalar @$drafts,
     );
 
