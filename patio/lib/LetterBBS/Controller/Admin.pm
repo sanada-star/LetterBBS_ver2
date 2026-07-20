@@ -149,12 +149,24 @@ sub thread_detail {
 
     my ($parent, $replies) = $self->{post_m}->list_by_thread($id, page => 1, per_page => 999999, include_deleted => 1);
 
+    my @posts = grep { defined $_ } ($parent, @$replies);
+    for my $post (@posts) {
+        $post->{display_date} = _format_date($post->{created_at});
+        $post->{body_excerpt} = LetterBBS::Sanitize::truncate(
+            LetterBBS::Sanitize::strip_tags($post->{body}), 100
+        );
+        $post->{can_delete} = ($post->{seq_no} > 0 && !$post->{is_deleted}) ? 1 : 0;
+    }
+
     my $html = $self->{template}->render('admin/thread_detail.html',
         $self->_admin_vars(),
-        page_title => '記事管理: ' . $thread->{subject},
-        thread     => $thread,
-        parent     => $parent,
-        replies    => $replies,
+        page_title     => '記事管理: ' . $thread->{subject},
+        thread_id     => $thread->{id},
+        thread_subject => $thread->{subject},
+        thread_author => $thread->{author},
+        status_label  => _admin_thread_status_label($thread->{status}),
+        post_count    => $thread->{post_count},
+        posts         => \@posts,
     );
     $self->_output_html($html);
 }
@@ -176,6 +188,7 @@ sub thread_exec {
     # 配列から最初の値を取る（複数選択時は全てに適用）
     my @ids = $cgi->param('ids');
     @ids = ($id) if !@ids && $id;
+    my $redirect = '?action=threads';
 
     if ($action eq 'delete') {
         for my $target_id (@ids) {
@@ -201,12 +214,19 @@ sub thread_exec {
         my @post_ids = $cgi->param('post_ids');
         for my $post_id (@post_ids) {
             my $clean_id = LetterBBS::Sanitize::to_uint($post_id);
-            $self->{post_m}->soft_delete($clean_id) if $clean_id;
+            next unless $clean_id;
+            my $post = $self->{post_m}->find($clean_id);
+            next unless $post;
+            next unless $post->{thread_id} == $id;
+            next unless $post->{seq_no} > 0;
+            next if $post->{is_deleted};
+            $self->{post_m}->soft_delete($clean_id, $self->{config}->get('upl_dir'));
         }
+        $redirect = '?action=thread_detail&id=' . $id;
     }
 
     print "Status: 302 Found\n";
-    print "Location: " . $self->{config}->get('admin_url') . "?action=threads\n";
+    print "Location: " . $self->{config}->get('admin_url') . "$redirect\n";
     print $self->{session}->cookie_header() . "\n" if $self->{session}->cookie_header();
     print "\n";
 }
@@ -470,6 +490,16 @@ sub _format_date {
     return '' unless $dt;
     $dt =~ s/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}).*/$1\/$2\/$3 $4:$5/;
     return $dt;
+}
+
+sub _admin_thread_status_label {
+    my ($status) = @_;
+    my %labels = (
+        active   => '公開中',
+        archived => '過去ログ',
+        deleted  => '削除済み',
+    );
+    return exists $labels{$status} ? $labels{$status} : $status;
 }
 
 1;

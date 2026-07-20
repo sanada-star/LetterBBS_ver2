@@ -49,7 +49,7 @@
         <tbody>
           <!-- loop:posts -->
           <tr<!-- if:is_deleted --> style="opacity:0.4;"<!-- /if:is_deleted -->>
-            <td><input type="checkbox" name="post_ids" value="<!-- var:id -->"></td>
+            <td><!-- if:can_delete --><input type="checkbox" name="post_ids" value="<!-- var:id -->"><!-- /if:can_delete --></td>
             <td><!-- var:seq_no --></td>
             <td><!-- var:author --></td>
             <td><!-- var:subject --></td>
