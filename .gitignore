@@ -20,3 +20,6 @@ Thumbs.db
 # Exclude repository documentation and main database
 docs/
 letterbbs.db
+
+# Isolated development worktrees
+.worktrees/
