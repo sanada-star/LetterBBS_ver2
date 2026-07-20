@@ -34,6 +34,13 @@ sub show {
     my $csrf_token = LetterBBS::Auth::generate_csrf_token(
         $self->{session}->id(), $self->{config}->get('csrf_secret')
     );
+    my $drafts = $self->{draft_m}->list_by_session($self->{session}->id());
+    for my $draft (@$drafts) {
+        $draft->{draft_id}      = $draft->{id};
+        $draft->{draft_subject} = $draft->{subject};
+        $draft->{draft_body}    = $draft->{body};
+        $draft->{display_date}  = _format_date($draft->{updated_at});
+    }
 
     my $html = $self->{template}->render_with_layout('desk.html',
         bbs_title  => $self->{config}->get('bbs_title') || '',
@@ -43,6 +50,8 @@ sub show {
         admin_url  => $self->{config}->get('admin_url') || '',
         page_title => '文通デスク',
         csrf_token => $csrf_token,
+        drafts      => $drafts,
+        draft_count => scalar @$drafts,
     );
 
     print "Content-Type: text/html; charset=utf-8\n";
@@ -206,6 +215,13 @@ sub api_send {
 }
 
 #--- 内部メソッド ---
+
+sub _format_date {
+    my ($dt) = @_;
+    return '' unless $dt;
+    $dt =~ s/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}).*/$1\/$2\/$3 $4:$5/;
+    return $dt;
+}
 
 sub _json_response {
     my ($self, $data) = @_;
