@@ -139,6 +139,14 @@
     panelVisible: false,
 
     init: function() {
+      var panels = document.querySelectorAll('#correspondeskPanel');
+      if (panels.length > 1) {
+        for (var i = 0; i < panels.length - 1; i++) {
+          if (panels[i] && panels[i].parentNode) {
+            panels[i].parentNode.removeChild(panels[i]);
+          }
+        }
+      }
       // 初期ロード時にバッジ更新だけ行う
       LB.API.getDrafts().then(function(data) {
         LB.Desk.drafts = data.drafts || [];

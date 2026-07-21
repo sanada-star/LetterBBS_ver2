@@ -154,11 +154,18 @@ button {
   color: var(--c-text);
   font-size: 0.875rem;
   font-weight: 500;
+  order: 10;
   border-radius: var(--r-md);
   transition:
     background 0.15s,
     color 0.15s;
   white-space: nowrap;
+}
+#menu a:nth-child(2) {
+  order: 1;
+}
+#menu a:first-child {
+  order: 2;
 }
 #menu a:hover {
   background: var(--c-primary);

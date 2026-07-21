@@ -80,7 +80,7 @@
           href="javascript:void(0)"
           onclick="LB.Desk.addFromThread(<!-- var:author_thread_id -->, '<!-- var:author -->', this)"
           class="btn-desk"
-          >&#128229; デスクに置く</a
+          >&#128229; 履歴確認・デスクに置く</a
         >
         <a
           href="<!-- var:cgi_url -->?mode=form&id=<!-- var:author_thread_id -->&quote_from=<!-- var:thread_id -->&quote=<!-- var:seq_no -->"
@@ -92,7 +92,7 @@
         <span
           class="btn-desk btn-disabled"
           title="この投稿者のスレッドが見つかりません"
-          >&#128229; デスクに置く</span
+          >&#128229; 履歴確認・デスクに置く</span
         >
         <span
           class="btn-quote btn-disabled"
@@ -260,7 +260,7 @@
 <!-- ロック表示 -->
 <!-- if:is_locked -->
 <div class="alert alert-info mt-2">
-  &#128274; このスレッドはロックされています。新しい返信はできません。
+  &#128274; このスレッドは管理者コメント機能のため、新しい返信はできません。
 </div>
 <!-- /if:is_locked -->
 
@@ -268,7 +268,7 @@
 <!-- raw:pagination -->
 
 <!-- 文通デスクパネル -->
-<div id="correspondeskPanel" class="correspondesk-panel" style="display: none">
+<div id="correspondeskPanelLegacy" class="correspondesk-panel" style="display: none">
   <div class="desk-header">
     <h3>&#9993;&#65039; 文通デスク</h3>
     <div class="desk-header-actions">
@@ -284,28 +284,19 @@
     </div>
   </div>
   <div class="desk-content">
-    <div class="desk-field">
-      <label for="desk-panel-password">パスワード（一括）</label>
-      <input
-        type="password"
-        id="desk-panel-password"
-        maxlength="8"
-        placeholder="編集/削除用"
-      />
-    </div>
-    <div id="deskItemList" class="desk-item-list"></div>
-    <p class="desk-empty-msg" id="deskEmptyMsg">
+    <div id="deskItemListLegacy" class="desk-item-list"></div>
+    <p class="desk-empty-msg" id="deskEmptyMsgLegacy">
       お返事がストックされていません。
     </p>
   </div>
 </div>
 
 <script>
-  var LB_CONFIG = {
+  window.LB_CONFIG = Object.assign({}, window.LB_CONFIG || {}, {
     apiUrl: '<!-- var:api_url -->',
     cgiUrl: '<!-- var:cgi_url -->',
     csrfToken: '<!-- var:csrf_token -->',
     threadId: <!-- raw:thread_id -->,
     threadAuthor: '<!-- var:parent_author -->'
-  };
+  });
 </script>

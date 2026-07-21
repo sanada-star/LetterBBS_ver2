@@ -1,5 +1,22 @@
 # LetterBBS ver2
 
+## 更新事項
+
+2026/4/8
+不具合の修正と、使いやすさ向上のための改善を行いました。
+
+- 管理パスワードが変更できるように修正を行いました。
+- 投稿フォームや表示テンプレートの不具合を修正し、表示エラーや投稿時の不安定な動作を改善しました。
+- CAPTCHA に対応し、設定に応じて画像認証を利用できるようにしました。
+- 管理画面の一部設定が正しく保存されない問題を修正しました。
+- 「デスクに置く」の表記を「履歴確認・デスクに置く」に変更し、機能の意味が分かりやすくなりました。
+- 上部メニューから文通デスクを直接開けるようにし、下書き確認や一括送信を行いやすくしました。
+- 文通デスクに保存した内容が共通パネルへ正しく反映されるように修正しました。
+- 管理画面のロック切替を「管理者コメント機能」として使えるようにし、対象スレッドを一覧上部に固定表示できるようにしました。
+- スレッド一覧の「画像あり」アイコンは、親記事に画像がある場合のみ表示するように調整しました。
+
+引き続き、掲示板の安定動作と使いやすさの改善を進めています。
+
 LetterBBS は、KENT WEB様で公開されている「Patio」をベースに、PBC（Play by Chat）などの「キャラクター交流」向けに大幅な改造を施したCGIスクリプトです。
 
 往復書簡形式のロールプレイ、1対1のロールプレイ上の秘匿会話、そしてログの保存に特化しています。
@@ -15,6 +32,8 @@ LetterBBS は、KENT WEB様で公開されている「Patio」をベースに、
 - [プログラムの設定及び設置 (詳細)](#プログラムの設定及び設置-詳細)
 - [トラブルシューティング](#トラブルシューティング)
 - [デザインのカスタマイズ](#デザインのカスタマイズ)
+- [思い出を保存のCSS変更方法](#思い出を保存のcss変更方法)
+- [スクリーンショット](#スクリーンショット)
 - [免責事項・お問い合わせ](#免責事項お問い合わせ)
 
 ---
@@ -184,14 +203,98 @@ patio/
 
 用意されている主要なスタイルは以下の通りです。
 
-- **standard**: デフォルトの落ち着いたデザイン
-- **gloomy**: ダークトーンの静かな雰囲気の設定
-- **simple**: 最低限の装飾で読みやすさを重視した表示
-- **fox**: その他カスタムデモ
+- **Default**: 白背景の定番スタイル
+- **cool**: 黒と青を基調としたクールなスタイル
+- **Dark**: 黒背景に濃い赤のダークスタイル
+- **punk**: サイバーパンクカラーなネオンスタイル
+- **fox**: 狐をモチーフにした和テーマ
 
 CSSなどを直接編集してオリジナルのスタイルを作りたい場合は、`cmn/css/` 内の各種設定や、`tmpl/` ディレクトリ配下のHTMLファイルを調整してください。
 
 ---
+
+## 思い出を保存のCSS変更方法
+
+「思い出を保存」機能でダウンロードされるログ HTML は、通常の画面用 CSS ファイルを読み込んでいません。
+そのため、**保存ログの見た目を変更したい場合は、専用の出力コード内にある `<style>` を直接編集**してください。
+
+### 変更するファイル
+
+- `patio/lib/LetterBBS/Controller/Thread.pm`
+
+### 主な変更箇所
+
+`Thread.pm` 内の `sub _generate_archive_html` で、保存ログ用 HTML をその場で組み立てています。
+この中にある `<style> ... </style>` が、「思い出を保存」で出力されるログ専用の CSS です。
+
+### ここを変えると見た目が変わります
+
+- `body`
+  ページ全体の背景色、文字色、余白、基本フォント
+- `.sidebar`
+  左側メニューの幅、背景色、影
+- `.menu-item`
+  メニュー項目の色、余白、選択中の表示
+- `.main-content`
+  右側の本文表示エリア
+- `.post`
+  各記事の背景色、角丸、影、余白
+- `.post-title`
+  記事件名の色や罫線
+- `.post-header`
+  投稿者名・投稿日の並び
+- `.post-body`
+  本文の行間、文字サイズ
+- `.timeline-sent` / `.timeline-received`
+  タイムライン表示時の色分け
+- `@media (max-width: 768px)`
+  スマートフォン表示時のレイアウト
+
+### 変更手順
+
+1. `patio/lib/LetterBBS/Controller/Thread.pm` を開く
+2. `sub _generate_archive_html` を探す
+3. その中の `<style>` ブロックを書き換える
+4. サーバーへ再アップロードする
+5. もう一度「思い出を保存」を実行して、見た目が変わることを確認する
+
+### 注意
+
+- この変更は、**保存されたログ HTML の見た目だけ**に反映されます。
+  通常の掲示板画面のデザインには影響しません。
+- 既にダウンロード済みの HTML には反映されません。
+  CSS を変更した後に、あらためて「思い出を保存」を実行してください。
+- 現在 `patio/lib/LetterBBS/Archive.pm` にもアーカイブ生成用コードがありますが、
+  **`patio.cgi` の「思い出を保存」で実際に使われているのは `Thread.pm` 側の出力処理です。**
+
+---
+
+## スクリーンショット
+
+**Default**: デザイン画面
+<img width="1127" height="898" alt="image" src="https://github.com/user-attachments/assets/cfc0ae6a-019b-4fe0-a8d5-a19ebc01e81a" />
+**cool**: デザイン画面
+<img width="999" height="880" alt="image" src="https://github.com/user-attachments/assets/f17c0da2-ddf3-4281-ae22-520afa3d35bb" />
+**Dark**: デザイン画面
+<img width="1060" height="843" alt="image" src="https://github.com/user-attachments/assets/cfca5352-b38f-44ed-84a5-722f3b31f3df" />
+**punk**: デザイン画面
+<img width="1040" height="893" alt="image" src="https://github.com/user-attachments/assets/b84c3ada-67c1-4a70-9e71-449a4c715dd2" />
+**fox**: デザイン画面
+<img width="1071" height="896" alt="image" src="https://github.com/user-attachments/assets/eed23c3f-b7b7-42be-a3b9-a992beb431c2" />
+
+**画像添付表示イメージ**
+<img width="1055" height="540" alt="image" src="https://github.com/user-attachments/assets/7a93932b-d1fc-4374-bfb2-7fc588a7cfc0" />
+
+**個別スレッドイメージ**
+<img width="865" height="907" alt="image" src="https://github.com/user-attachments/assets/e0577c10-621c-45d2-9d6a-f682bc1cea2a" />
+
+**タイムラインイメージ**
+<img width="1008" height="891" alt="image" src="https://github.com/user-attachments/assets/f7512b9f-a737-4532-ab65-526068e8a977" />
+
+*使い方マニュアルイメージ*
+<img width="888" height="820" alt="image" src="https://github.com/user-attachments/assets/deec2a0a-159b-47f2-afc6-6fb55da2bfb5" />
+
+
 
 ## 免責事項・お問い合わせ
 

@@ -216,10 +216,11 @@ subtest 'show renders the empty state without batch-send controls' => sub {
     }
     close $stdout or die $!;
     $output = decode('UTF-8', $output);
+    my ($desk_content) = $output =~ m{<main class="main">\s*(.*?)\s*</main>}s;
 
     is($template->{last_vars}{draft_count}, 0, 'passes a zero draft count');
-    like($output, qr/下書きはありません。/, 'shows the empty-state message');
-    unlike($output, qr/一括送信/, 'hides batch-send text and buttons');
+    like($desk_content, qr/下書きはありません。/, 'shows the empty-state message');
+    unlike($desk_content, qr/一括送信/, 'hides dedicated batch-send text and buttons');
 };
 
 subtest 'api_send shares one secure password hash across a valid batch' => sub {

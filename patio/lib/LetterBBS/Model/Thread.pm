@@ -31,8 +31,13 @@ sub list {
     my $per_page = $opts{per_page} || 50;
     my $offset   = ($page - 1) * $per_page;
 
+    my $order_by = "updated_at DESC";
+    if ($status eq 'active') {
+        $order_by = "is_locked DESC, updated_at DESC";
+    }
+
     my $rows = $self->dbh->selectall_arrayref(
-        "SELECT * FROM threads WHERE status = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?",
+        "SELECT * FROM threads WHERE status = ? ORDER BY $order_by LIMIT ? OFFSET ?",
         { Slice => {} }, $status, $per_page, $offset
     );
     return $rows || [];
@@ -201,12 +206,12 @@ sub list_since {
     my ($self, $since) = @_;
     if ($since) {
         return $self->dbh->selectall_arrayref(
-            "SELECT * FROM threads WHERE status = 'active' AND updated_at > ? ORDER BY updated_at DESC",
+            "SELECT * FROM threads WHERE status = 'active' AND updated_at > ? ORDER BY is_locked DESC, updated_at DESC",
             { Slice => {} }, $since
         ) || [];
     }
     return $self->dbh->selectall_arrayref(
-        "SELECT * FROM threads WHERE status = 'active' ORDER BY updated_at DESC LIMIT 100",
+        "SELECT * FROM threads WHERE status = 'active' ORDER BY is_locked DESC, updated_at DESC LIMIT 100",
         { Slice => {} }
     ) || [];
 }

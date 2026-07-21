@@ -217,8 +217,8 @@ test("desk template configures the csrf token for the app", function () {
   assert.equal(context.window.LB_CONFIG.csrfToken, "csrf-from-template");
 });
 
-test("read template exposes the shared password field for edit and delete", function () {
-  const html = fs.readFileSync(path.join(root, "patio/tmpl/read.html"), "utf8");
+test("layout exposes the shared password field for edit and delete", function () {
+  const html = fs.readFileSync(path.join(root, "patio/tmpl/layout.html"), "utf8");
   const input = html.match(/<input\b[^>]*\bid=["']desk-panel-password["'][^>]*>/i);
 
   assert.match(html, /<label\b[^>]*\bfor=["']desk-panel-password["'][^>]*>\s*パスワード（一括）\s*<\/label>/i);

@@ -1,7 +1,7 @@
 package LetterBBS::Controller::Page;
 
 #============================================================================
-# LetterBBS ver2 - 静的ページコントローラー
+# LetterBBS ver2 - 静的ページコントローラ
 #============================================================================
 
 use strict;
@@ -23,7 +23,6 @@ sub new {
     }, $class;
 }
 
-# マニュアル表示
 sub manual {
     my ($self) = @_;
     my $html = $self->{template}->render_with_layout('manual.html',
@@ -33,7 +32,6 @@ sub manual {
     $self->_output_html($html);
 }
 
-# 留意事項表示
 sub note {
     my ($self) = @_;
     my $html = $self->{template}->render_with_layout('note.html',
@@ -43,11 +41,9 @@ sub note {
     $self->_output_html($html);
 }
 
-# ログイン画面（会員認証モード）
 sub enter {
     my ($self) = @_;
     unless ($self->{config}->get('authkey')) {
-        # 認証モードでない場合はトップへ
         print "Status: 302 Found\n";
         print "Location: " . $self->{config}->get('cgi_url') . "\n\n";
         return;
@@ -55,13 +51,12 @@ sub enter {
 
     my $html = $self->{template}->render_with_layout('enter.html',
         $self->_common_vars(),
-        page_title => 'ログイン',
-        error_msg  => '',
+        page_title  => 'ログイン',
+        login_error => '',
     );
     $self->_output_html($html);
 }
 
-# 会員ログイン実行
 sub login {
     my ($self) = @_;
     unless ($self->{config}->get('authkey')) {
@@ -71,12 +66,12 @@ sub login {
     }
 
     my $login_id = LetterBBS::Sanitize::sanitize_input($self->{cgi}->param('login_id') || '');
-    my $password = $self->{cgi}->param('password') || '';
+    my $password = $self->{cgi}->param('login_pwd') || '';
 
     my $user = $self->{user_m}->authenticate($login_id, $password);
     if ($user) {
         $self->{session}->regenerate();
-        $self->{session}->set('user_id', $user->{id});
+        $self->{session}->set('user_id',   $user->{id});
         $self->{session}->set('user_name', $user->{name});
         $self->{session}->set('user_rank', $user->{rank});
 
@@ -87,14 +82,13 @@ sub login {
     } else {
         my $html = $self->{template}->render_with_layout('enter.html',
             $self->_common_vars(),
-            page_title => 'ログイン',
-            error_msg  => 'ログインIDまたはパスワードが正しくありません。',
+            page_title  => 'ログイン',
+            login_error => 'ログインIDまたはパスワードが正しくありません。',
         );
         $self->_output_html($html);
     }
 }
 
-# 会員ログアウト
 sub logout {
     my ($self) = @_;
     $self->{session}->destroy();
@@ -104,16 +98,18 @@ sub logout {
     print "\n";
 }
 
-#--- 内部メソッド ---
-
 sub _common_vars {
     my ($self) = @_;
+    my $csrf_token = LetterBBS::Auth::generate_csrf_token(
+        $self->{session}->id(), $self->{config}->get('csrf_secret')
+    );
     return (
         bbs_title => $self->{config}->get('bbs_title') || '',
         css_url   => $self->{config}->css_url() || '',
         cgi_url   => $self->{config}->get('cgi_url') || '',
         api_url   => $self->{config}->get('api_url') || '',
         admin_url => $self->{config}->get('admin_url') || '',
+        csrf_token => $csrf_token,
     );
 }
 
