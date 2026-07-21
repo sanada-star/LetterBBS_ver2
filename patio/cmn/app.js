@@ -317,13 +317,58 @@
         });
     },
 
+    // 下書き保存
+    saveDraft: function (draftId) {
+      var form = document.querySelector(
+        '.desk-edit-form[data-draft-id="' + draftId + '"]',
+      );
+      if (!form) {
+        LB.UI.showToast("\u7de8\u96c6\u30d5\u30a9\u30fc\u30e0\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093", "error");
+        return;
+      }
+
+      var threadId = form.querySelector('[name="thread_id"]').value;
+      var author = form.querySelector('[name="author"]').value.trim();
+      var subject = form.querySelector('[name="subject"]').value.trim();
+      var body = form.querySelector('[name="body"]').value.trim();
+
+      if (!author) {
+        LB.UI.showToast("\u540d\u524d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "error");
+        return;
+      }
+      if (!body) {
+        LB.UI.showToast("\u30e1\u30c3\u30bb\u30fc\u30b8\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "error");
+        return;
+      }
+
+      LB.API.saveDraft({
+        draft_id: draftId,
+        thread_id: threadId,
+        author: author,
+        subject: subject,
+        body: body,
+        csrf_token: LB.Config.csrfToken,
+      })
+        .then(function () {
+          LB.UI.showToast("\u4e0b\u66f8\u304d\u3092\u4fdd\u5b58\u3057\u307e\u3057\u305f");
+          window.location.reload();
+        })
+        .catch(function (err) {
+          LB.UI.showToast("\u4fdd\u5b58\u30a8\u30e9\u30fc: " + err.message, "error");
+        });
+    },
+
     // 下書き個別削除
     removeDraft: function (draftId) {
       if (!LB.UI.confirm("この下書きを削除しますか？")) return;
       LB.API.deleteDraft(draftId)
         .then(function () {
           LB.UI.showToast("下書きを削除しました");
-          LB.Desk.refreshPanel();
+          if (document.getElementById("deskItemList")) {
+            LB.Desk.refreshPanel();
+          } else {
+            window.location.reload();
+          }
         })
         .catch(function (err) {
           LB.UI.showToast("削除エラー: " + err.message, "error");

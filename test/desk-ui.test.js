@@ -9,15 +9,15 @@ const vm = require("node:vm");
 const root = path.resolve(__dirname, "..");
 const appSource = fs.readFileSync(path.join(root, "patio/cmn/app.js"), "utf8");
 
-function loadApp(elements) {
+function loadApp(elements, config) {
   let reloads = 0;
   const document = {
     addEventListener: function () {},
     getElementById: function (id) {
       return elements[id] || null;
     },
-    querySelector: function () {
-      return null;
+    querySelector: function (selector) {
+      return elements[selector] || null;
     },
     createElement: function () {
       return {
@@ -39,7 +39,7 @@ function loadApp(elements) {
         reloads += 1;
       },
     },
-    LB_CONFIG: {},
+    LB_CONFIG: config || {},
   };
   const context = {
     document: document,
@@ -57,6 +57,15 @@ function loadApp(elements) {
 
   vm.runInNewContext(appSource, context, { filename: "patio/cmn/app.js" });
   return { LB: window.LB, reloads: function () { return reloads; } };
+}
+
+function draftForm(values) {
+  return {
+    querySelector: function (selector) {
+      const name = selector.match(/^\[name="([^"]+)"\]$/);
+      return name ? { value: values[name[1]] } : null;
+    },
+  };
 }
 
 test("panel batch send passes its password and refreshes the panel", async function () {
@@ -117,6 +126,75 @@ test("dedicated desk batch send passes its password and reloads", async function
   assert.deepEqual(calls, [["1,2", "desk-pass"]]);
   assert.equal(refreshes, 0);
   assert.equal(app.reloads(), 1);
+});
+
+test("dedicated desk save passes the edited form values and reloads", async function () {
+  const selector = '.desk-edit-form[data-draft-id="7"]';
+  const form = draftForm({
+    thread_id: "11",
+    author: " Alice ",
+    subject: " Updated subject ",
+    body: " Updated body ",
+  });
+  const app = loadApp({ [selector]: form }, { csrfToken: "csrf-value" });
+  const calls = [];
+  app.LB.API.saveDraft = function (data) {
+    calls.push(data);
+    return Promise.resolve({ draft_id: 7 });
+  };
+
+  app.LB.Desk.saveDraft(7);
+  await Promise.resolve();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [{
+    draft_id: 7,
+    thread_id: "11",
+    author: "Alice",
+    subject: "Updated subject",
+    body: "Updated body",
+    csrf_token: "csrf-value",
+  }]);
+  assert.equal(app.reloads(), 1);
+});
+
+test("dedicated desk remove reloads after a successful delete", async function () {
+  const app = loadApp({});
+  app.LB.API.deleteDraft = function () {
+    return Promise.resolve({});
+  };
+  let refreshes = 0;
+  app.LB.Desk.refreshPanel = function () {
+    refreshes += 1;
+  };
+
+  app.LB.Desk.removeDraft(7);
+  await Promise.resolve();
+
+  assert.equal(app.reloads(), 1);
+  assert.equal(refreshes, 0);
+});
+
+test("panel remove refreshes the panel after a successful delete", async function () {
+  const app = loadApp({ deskItemList: {} });
+  app.LB.API.deleteDraft = function () {
+    return Promise.resolve({});
+  };
+  let refreshes = 0;
+  app.LB.Desk.refreshPanel = function () {
+    refreshes += 1;
+  };
+
+  app.LB.Desk.removeDraft(7);
+  await Promise.resolve();
+
+  assert.equal(refreshes, 1);
+  assert.equal(app.reloads(), 0);
+});
+
+test("layout uses the current app.js cache version", function () {
+  const html = fs.readFileSync(path.join(root, "patio/tmpl/layout.html"), "utf8");
+
+  assert.match(html, /<script src="\.\/cmn\/app\.js\?v=20260721_1"><\/script>/);
 });
 
 test("read template exposes the shared password field for edit and delete", function () {
