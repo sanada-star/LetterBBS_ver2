@@ -205,10 +205,15 @@ test("desk template configures the csrf token for the app", function () {
   });
 
   assert.ok(configScript, "desk template should define LB_CONFIG");
-  const source = configScript[1].replace("<!-- var:csrf_token -->", "csrf-from-template");
+  const source = configScript[1]
+    .replace("<!-- var:api_url -->", "/custom/api.cgi")
+    .replace("<!-- var:cgi_url -->", "/custom/patio.cgi")
+    .replace("<!-- var:csrf_token -->", "csrf-from-template");
   const context = { window: {} };
   vm.runInNewContext(source, context, { filename: "patio/tmpl/desk.html" });
 
+  assert.equal(context.window.LB_CONFIG.apiUrl, "/custom/api.cgi");
+  assert.equal(context.window.LB_CONFIG.cgiUrl, "/custom/patio.cgi");
   assert.equal(context.window.LB_CONFIG.csrfToken, "csrf-from-template");
 });
 
