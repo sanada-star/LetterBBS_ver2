@@ -77,9 +77,47 @@ sub initialize {
         $self->_create_triggers();
         $self->_insert_defaults();
         $self->_set_schema_version(1);
+        $version = 1;
     }
-    # 将来のマイグレーション
-    # if ($version < 2) { $self->_migrate_v2(); $self->_set_schema_version(2); }
+    if ($version < 2) {
+        $self->_migrate_v2();
+    }
+}
+
+sub _migrate_v2 {
+    my ($self) = @_;
+    my $dbh = $self->{dbh};
+
+    $self->begin_transaction();
+    my $ok = eval {
+        $dbh->do("DROP TRIGGER IF EXISTS trg_post_count_delete");
+        $self->_create_post_count_delete_trigger();
+        $dbh->do("UPDATE threads SET
+            post_count = (
+                SELECT COUNT(*) FROM posts
+                WHERE thread_id = threads.id AND seq_no > 0 AND is_deleted = 0
+            ),
+            last_author = COALESCE((
+                SELECT author FROM posts
+                WHERE thread_id = threads.id AND is_deleted = 0
+                ORDER BY seq_no DESC LIMIT 1
+            ), author),
+            updated_at = COALESCE((
+                SELECT created_at FROM posts
+                WHERE thread_id = threads.id AND is_deleted = 0
+                ORDER BY seq_no DESC LIMIT 1
+            ), created_at)
+            WHERE status = 'active'
+        ");
+        $self->_set_schema_version(2);
+        $self->commit();
+        1;
+    };
+    if (!$ok) {
+        my $error = $@;
+        $self->rollback();
+        die $error;
+    }
 }
 
 sub _get_schema_version {
@@ -277,16 +315,7 @@ sub _create_triggers {
     ");
 
     # post_count 自動更新: 論理削除時
-    $dbh->do("CREATE TRIGGER IF NOT EXISTS trg_post_count_delete
-        AFTER UPDATE OF is_deleted ON posts
-        WHEN old.is_deleted = 0 AND new.is_deleted = 1 AND new.seq_no > 0
-        BEGIN
-            UPDATE threads SET
-                post_count = post_count - 1,
-                updated_at = datetime('now','localtime')
-            WHERE id = new.thread_id;
-        END
-    ");
+    $self->_create_post_count_delete_trigger();
 
     # FTS 自動更新
     if ($self->{fts_available}) {
@@ -314,6 +343,34 @@ sub _create_triggers {
             END
         ");
     }
+}
+
+sub _create_post_count_delete_trigger {
+    my ($self) = @_;
+    my $dbh = $self->{dbh};
+
+    $dbh->do("CREATE TRIGGER IF NOT EXISTS trg_post_count_delete
+        AFTER UPDATE OF is_deleted ON posts
+        WHEN old.is_deleted = 0 AND new.is_deleted = 1 AND new.seq_no > 0
+        BEGIN
+            UPDATE threads SET
+                post_count = (
+                    SELECT COUNT(*) FROM posts
+                    WHERE thread_id = new.thread_id AND seq_no > 0 AND is_deleted = 0
+                ),
+                last_author = COALESCE((
+                    SELECT author FROM posts
+                    WHERE thread_id = new.thread_id AND is_deleted = 0
+                    ORDER BY seq_no DESC LIMIT 1
+                ), author),
+                updated_at = COALESCE((
+                    SELECT created_at FROM posts
+                    WHERE thread_id = new.thread_id AND is_deleted = 0
+                    ORDER BY seq_no DESC LIMIT 1
+                ), created_at)
+            WHERE id = new.thread_id;
+        END
+    ");
 }
 
 sub _insert_defaults {

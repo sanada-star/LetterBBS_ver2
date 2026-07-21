@@ -82,6 +82,13 @@
 </div>
 
 <script>
+  window.LB_CONFIG = window.LB_CONFIG || {};
+  window.LB_CONFIG.apiUrl = '<!-- var:api_url -->';
+  window.LB_CONFIG.cgiUrl = '<!-- var:cgi_url -->';
+  window.LB_CONFIG.csrfToken = '<!-- var:csrf_token -->';
+</script>
+
+<script>
   document.addEventListener('DOMContentLoaded', function() {
     // 各下書きのタイムラインを読み込む
     var timelines = document.querySelectorAll('[data-timeline]');

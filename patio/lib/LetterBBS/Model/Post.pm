@@ -51,7 +51,7 @@ sub list_by_thread {
 
     # 返信
     my $replies = $self->dbh->selectall_arrayref(
-        "SELECT * FROM posts WHERE thread_id = ? AND seq_no > 0 $include_deleted ORDER BY seq_no ASC LIMIT ? OFFSET ?",
+        "SELECT * FROM posts WHERE thread_id = ? AND seq_no > 0 $include_deleted ORDER BY seq_no DESC LIMIT ? OFFSET ?",
         { Slice => {} }, $thread_id, $per_page, $offset
     ) || [];
 
