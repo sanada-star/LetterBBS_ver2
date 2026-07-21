@@ -320,7 +320,7 @@
     // 下書き保存
     saveDraft: function (draftId) {
       var form = document.querySelector(
-        '.desk-edit-form[data-draft-id="' + draftId + '"]',
+        '.desk-edit-form[data-draft-id="' + draftId + '"]'
       );
       if (!form) {
         LB.UI.showToast("\u7de8\u96c6\u30d5\u30a9\u30fc\u30e0\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093", "error");

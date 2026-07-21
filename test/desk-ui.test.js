@@ -197,6 +197,21 @@ test("layout uses the current app.js cache version", function () {
   assert.match(html, /<script src="\.\/cmn\/app\.js\?v=20260721_1"><\/script>/);
 });
 
+test("desk template configures the csrf token for the app", function () {
+  const html = fs.readFileSync(path.join(root, "patio/tmpl/desk.html"), "utf8");
+  const scripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g));
+  const configScript = scripts.find(function (match) {
+    return match[1].includes("LB_CONFIG");
+  });
+
+  assert.ok(configScript, "desk template should define LB_CONFIG");
+  const source = configScript[1].replace("<!-- var:csrf_token -->", "csrf-from-template");
+  const context = { window: {} };
+  vm.runInNewContext(source, context, { filename: "patio/tmpl/desk.html" });
+
+  assert.equal(context.window.LB_CONFIG.csrfToken, "csrf-from-template");
+});
+
 test("read template exposes the shared password field for edit and delete", function () {
   const html = fs.readFileSync(path.join(root, "patio/tmpl/read.html"), "utf8");
   const input = html.match(/<input\b[^>]*\bid=["']desk-panel-password["'][^>]*>/i);
