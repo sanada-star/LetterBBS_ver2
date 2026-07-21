@@ -332,6 +332,16 @@
 
     // 一括送信
     sendAll: function () {
+      var input = document.getElementById("desk-panel-password");
+      this._sendAllWithPassword(input ? input.value : "", false);
+    },
+
+    sendAllFromDesk: function () {
+      var input = document.getElementById("desk-password");
+      this._sendAllWithPassword(input ? input.value : "", true);
+    },
+
+    _sendAllWithPassword: function (password, reloadPage) {
       if (this.drafts.length === 0) {
         LB.UI.showToast("送信する下書きがありません", "error");
         return;
@@ -344,10 +354,11 @@
           return d.id;
         })
         .join(",");
-      LB.API.sendDrafts(ids, "")
+      LB.API.sendDrafts(ids, password)
         .then(function (result) {
           LB.UI.showToast(result.posted + "件の返信を送信しました");
-          LB.Desk.refreshPanel();
+          if (reloadPage) window.location.reload();
+          else LB.Desk.refreshPanel();
         })
         .catch(function (err) {
           LB.UI.showToast("送信エラー: " + err.message, "error");
