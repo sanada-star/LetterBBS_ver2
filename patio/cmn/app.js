@@ -358,7 +358,11 @@
         .then(function (result) {
           LB.UI.showToast(result.posted + "件の返信を送信しました");
           if (reloadPage) window.location.reload();
-          else LB.Desk.refreshPanel();
+          else {
+            var input = document.getElementById("desk-panel-password");
+            if (input) input.value = "";
+            LB.Desk.refreshPanel();
+          }
         })
         .catch(function (err) {
           LB.UI.showToast("送信エラー: " + err.message, "error");

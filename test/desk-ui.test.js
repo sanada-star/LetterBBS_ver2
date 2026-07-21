@@ -60,7 +60,8 @@ function loadApp(elements) {
 }
 
 test("panel batch send passes its password and refreshes the panel", async function () {
-  const app = loadApp({ "desk-panel-password": { value: "panel-pass" } });
+  const passwordInput = { value: "panel-pass" };
+  const app = loadApp({ "desk-panel-password": passwordInput });
   const calls = [];
   let refreshes = 0;
   app.LB.Desk.drafts = [{ id: 1 }, { id: 2 }];
@@ -76,8 +77,25 @@ test("panel batch send passes its password and refreshes the panel", async funct
   await Promise.resolve();
 
   assert.deepEqual(calls, [["1,2", "panel-pass"]]);
+  assert.equal(passwordInput.value, "");
   assert.equal(refreshes, 1);
   assert.equal(app.reloads(), 0);
+});
+
+test("panel batch send falls back to an empty password without an input", async function () {
+  const app = loadApp({});
+  const calls = [];
+  app.LB.Desk.drafts = [{ id: 1 }, { id: 2 }];
+  app.LB.API.sendDrafts = function (ids, password) {
+    calls.push([ids, password]);
+    return Promise.resolve({ posted: 2 });
+  };
+  app.LB.Desk.refreshPanel = function () {};
+
+  app.LB.Desk.sendAll();
+  await Promise.resolve();
+
+  assert.deepEqual(calls, [["1,2", ""]]);
 });
 
 test("dedicated desk batch send passes its password and reloads", async function () {
