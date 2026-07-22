@@ -83,6 +83,7 @@ sub create {
 # スレッド更新
 sub update {
     my ($self, $id, %data) = @_;
+    my $touch_activity = exists $data{touch_activity} ? delete $data{touch_activity} : 1;
     my @sets;
     my @vals;
     for my $key (qw(subject is_locked admin_note status has_image last_author)) {
@@ -93,8 +94,10 @@ sub update {
     }
     return 0 unless @sets;
 
-    push @sets, "updated_at = ?";
-    push @vals, _now();
+    if ($touch_activity) {
+        push @sets, "updated_at = ?";
+        push @vals, _now();
+    }
     push @vals, $id;
 
     $self->dbh->do(

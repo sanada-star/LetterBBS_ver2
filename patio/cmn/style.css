@@ -341,10 +341,14 @@ button {
   font-size: 0.8rem;
   color: var(--c-text-sub);
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   gap: var(--sp-md);
 }
-.icon-list span {
+.icon-list > span {
+  white-space: nowrap;
+}
+.icon-list > span > span {
   margin-right: 2px;
 }
 

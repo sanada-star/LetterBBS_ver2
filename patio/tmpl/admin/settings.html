@@ -75,6 +75,14 @@
       </div>
 
       <div class="form-group">
+        <label>CAPTCHA画像認証</label>
+        <select name="use_captcha">
+          <option value="0"<!-- if:use_captcha_off --> selected<!-- /if:use_captcha_off -->>無効</option>
+          <option value="1"<!-- if:use_captcha_on --> selected<!-- /if:use_captcha_on -->>有効</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label>連続投稿待機時間（秒）</label>
         <input type="number" name="wait" value="<!-- var:wait -->">
       </div>

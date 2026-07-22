@@ -81,6 +81,13 @@ sub initialize {
     }
     if ($version < 2) {
         $self->_migrate_v2();
+        $version = 2;
+    }
+    if ($version < 3) {
+        $self->_migrate_v3();
+    } else {
+        # 既存DBでもプロセスごとにFTS利用可否を初期化する
+        $self->_ensure_fts_after_v3();
     }
 }
 
@@ -110,6 +117,31 @@ sub _migrate_v2 {
             WHERE status = 'active'
         ");
         $self->_set_schema_version(2);
+        $self->commit();
+        1;
+    };
+    if (!$ok) {
+        my $error = $@;
+        $self->rollback();
+        die $error;
+    }
+}
+
+sub _migrate_v3 {
+    my ($self) = @_;
+    my $dbh = $self->{dbh};
+
+    $self->begin_transaction();
+    my $ok = eval {
+        $self->_create_fts();
+        if ($self->{fts_available}) {
+            for my $trigger (qw(trg_fts_insert trg_fts_delete trg_fts_update)) {
+                $dbh->do("DROP TRIGGER IF EXISTS $trigger");
+            }
+            $self->_create_fts_triggers();
+            $dbh->do("INSERT INTO posts_fts(posts_fts) VALUES ('rebuild')");
+        }
+        $self->_set_schema_version(3);
         $self->commit();
         1;
     };
@@ -295,6 +327,38 @@ sub _create_fts {
     }
 }
 
+sub _detect_fts_available {
+    my ($self) = @_;
+    my $ok = eval {
+        $self->{dbh}->selectrow_array("SELECT count(*) FROM posts_fts WHERE 0");
+        1;
+    };
+    $self->{fts_available} = $ok ? 1 : 0;
+    return $self->{fts_available};
+}
+
+sub _ensure_fts_after_v3 {
+    my ($self) = @_;
+    return 1 if $self->_detect_fts_available();
+
+    $self->begin_transaction();
+    my $ok = eval {
+        $self->_create_fts();
+        if ($self->{fts_available}) {
+            $self->_create_fts_triggers();
+            $self->{dbh}->do("INSERT INTO posts_fts(posts_fts) VALUES ('rebuild')");
+        }
+        $self->commit();
+        1;
+    };
+    if (!$ok) {
+        my $error = $@;
+        $self->rollback();
+        die $error;
+    }
+    return $self->{fts_available};
+}
+
 sub fts_available { return $_[0]->{fts_available} || 0 }
 
 sub _create_triggers {
@@ -318,31 +382,37 @@ sub _create_triggers {
     $self->_create_post_count_delete_trigger();
 
     # FTS 自動更新
-    if ($self->{fts_available}) {
-        $dbh->do("CREATE TRIGGER IF NOT EXISTS trg_fts_insert
-            AFTER INSERT ON posts
-            BEGIN
-                INSERT INTO posts_fts(rowid, subject, body, author)
-                VALUES (new.id, new.subject, new.body, new.author);
-            END
-        ");
-        $dbh->do("CREATE TRIGGER IF NOT EXISTS trg_fts_delete
-            AFTER DELETE ON posts
-            BEGIN
-                INSERT INTO posts_fts(posts_fts, rowid, subject, body, author)
-                VALUES ('delete', old.id, old.subject, old.body, old.author);
-            END
-        ");
-        $dbh->do("CREATE TRIGGER IF NOT EXISTS trg_fts_update
-            AFTER UPDATE OF subject, body, author ON posts
-            BEGIN
-                INSERT INTO posts_fts(posts_fts, rowid, subject, body, author)
-                VALUES ('delete', old.id, old.subject, old.body, old.author);
-                INSERT INTO posts_fts(rowid, subject, body, author)
-                VALUES (new.id, new.subject, new.body, new.author);
-            END
-        ");
-    }
+    $self->_create_fts_triggers();
+}
+
+sub _create_fts_triggers {
+    my ($self) = @_;
+    return unless $self->{fts_available};
+    my $dbh = $self->{dbh};
+
+    $dbh->do("CREATE TRIGGER IF NOT EXISTS trg_fts_insert
+        AFTER INSERT ON posts
+        BEGIN
+            INSERT INTO posts_fts(rowid, subject, body, author)
+            VALUES (new.id, new.subject, new.body, new.author);
+        END
+    ");
+    $dbh->do("CREATE TRIGGER IF NOT EXISTS trg_fts_delete
+        AFTER DELETE ON posts
+        BEGIN
+            INSERT INTO posts_fts(posts_fts, rowid, subject, body, author)
+            VALUES ('delete', old.id, old.subject, old.body, old.author);
+        END
+    ");
+    $dbh->do("CREATE TRIGGER IF NOT EXISTS trg_fts_update
+        AFTER UPDATE OF subject, body, author ON posts
+        BEGIN
+            INSERT INTO posts_fts(posts_fts, rowid, subject, body, author)
+            VALUES ('delete', old.id, old.subject, old.body, old.author);
+            INSERT INTO posts_fts(rowid, subject, body, author)
+            VALUES (new.id, new.subject, new.body, new.author);
+        END
+    ");
 }
 
 sub _create_post_count_delete_trigger {

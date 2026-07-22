@@ -41,6 +41,17 @@ binmode STDOUT, ':encoding(UTF-8)';
     package Local::AdminThreadModel;
 
     sub new { bless {}, shift }
+    sub list {
+        return [{
+            id         => 7,
+            subject    => '件名',
+            author     => '親',
+            status     => 'active',
+            post_count => 2,
+            updated_at => '2026-07-20 12:13:14',
+        }];
+    }
+    sub count_by_status { return $_[1] eq 'archived' ? 2 : 3 }
     sub find {
         return {
             id         => 7,
@@ -106,6 +117,20 @@ binmode STDOUT, ':encoding(UTF-8)';
         my ($self, @args) = @_;
         push @{$self->{deleted}}, \@args;
     }
+    sub count_all { 12 }
+    sub count_images { 3 }
+}
+
+{
+    package Local::AdminUserModel;
+    sub new { bless {}, shift }
+    sub count { 4 }
+}
+
+{
+    package Local::AdminSettingModel;
+    sub new { bless { values => $_[1] || {} }, $_[0] }
+    sub get_all { return { %{$_[0]->{values}} } }
 }
 
 {
@@ -131,10 +156,13 @@ sub make_controller {
             bbs_title  => '掲示板',
             cgi_url    => '/bbs.cgi',
             csrf_secret => 'test-secret',
+            db_file    => '/missing/letterbbs.db',
             upl_dir    => '/uploads',
         }),
         thread_m => $args{thread_m} || Local::AdminThreadModel->new,
         post_m   => $args{post_m} || Local::AdminPostModel->new,
+        user_m   => $args{user_m} || Local::AdminUserModel->new,
+        setting_m => $args{setting_m} || Local::AdminSettingModel->new,
         template => $template,
     }, 'LetterBBS::Controller::Admin';
 }
@@ -170,6 +198,72 @@ subtest 'thread_detail passes flattened thread and post values to template' => s
     is($deleted->{body_excerpt}, '削除済み本文', 'keeps deleted reply visible');
     is($deleted->{can_delete}, 0, 'deleted reply cannot be deleted');
     like($output, qr/Content-Type: text\/html/, 'outputs rendered response');
+};
+
+subtest 'thread list renders a localized status label' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $controller = make_controller(template => $template);
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->thread_list();
+    }
+    close $stdout or die $!;
+
+    is($template->{file}, 'admin/threads.html', 'renders thread list template');
+    my $threads = $template->{vars}{threads};
+    is($threads->[0]{status_label}, '公開中', 'passes localized thread status');
+    is($threads->[0]{post_count}, 2, 'keeps reply count');
+    is($threads->[0]{display_date}, '2026/07/20 12:13', 'formats activity date');
+};
+
+subtest 'size check renders capacity and all requested record counts' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $controller = make_controller(template => $template);
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->size_check();
+    }
+    close $stdout or die $!;
+
+    my $vars = $template->{vars};
+    is($vars->{active_threads}, 3, 'counts active threads');
+    is($vars->{archived_threads}, 2, 'counts archived threads');
+    is($vars->{total_posts}, 12, 'counts all post records');
+    is($vars->{total_users}, 4, 'counts users');
+    is($vars->{total_images}, 3, 'counts image records');
+};
+
+subtest 'settings renders the current CAPTCHA selection' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $controller = make_controller(
+        template => $template,
+        setting_m => Local::AdminSettingModel->new({ use_captcha => '1' }),
+    );
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->settings();
+    }
+    close $stdout or die $!;
+
+    is($template->{vars}{use_captcha_on}, 1, 'CAPTCHA enabled option is selected');
+    is($template->{vars}{use_captcha_off}, 0, 'CAPTCHA disabled option is not selected');
+};
+
+subtest 'settings template exposes the CAPTCHA setting field' => sub {
+    open my $fh, '<:encoding(UTF-8)', 'patio/tmpl/admin/settings.html' or die $!;
+    local $/;
+    my $template = <$fh>;
+    close $fh or die $!;
+
+    like($template, qr{<select name="use_captcha">}, 'CAPTCHA select is present');
+    like($template, qr{if:use_captcha_on}, 'enabled selection flag is used');
+    like($template, qr{if:use_captcha_off}, 'disabled selection flag is used');
 };
 
 subtest 'delete_posts only soft-deletes active replies belonging to the thread' => sub {

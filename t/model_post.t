@@ -7,7 +7,7 @@ use LetterBBS::Model::Post;
 {
     package Local::PostDBH;
 
-    sub new { bless { reply_sql => '', do_sql => [] }, shift }
+    sub new { bless { reply_sql => '', do_sql => [], count_sql => [] }, shift }
     sub selectrow_hashref { return { id => 1, thread_id => 7, seq_no => 0 } }
     sub selectall_arrayref {
         my ($self, $sql) = @_;
@@ -18,6 +18,11 @@ use LetterBBS::Model::Post;
         my ($self, $sql) = @_;
         push @{$self->{do_sql}}, $sql;
         return 1;
+    }
+    sub selectrow_array {
+        my ($self, $sql) = @_;
+        push @{$self->{count_sql}}, $sql;
+        return $sql =~ /post_images/ ? 3 : 12;
     }
 }
 
@@ -49,5 +54,10 @@ unlike(
     qr/UPDATE\s+threads/i,
     'editing a post does not bump thread activity'
 );
+
+is(LetterBBS::Model::Post->new($db)->count_all(), 12, 'counts all post records');
+is(LetterBBS::Model::Post->new($db)->count_images(), 3, 'counts image records');
+like(join("\n", @{$dbh->{count_sql}}), qr/COUNT\(\*\)\s+FROM\s+posts\b/i, 'post count uses all rows');
+like(join("\n", @{$dbh->{count_sql}}), qr/COUNT\(\*\)\s+FROM\s+post_images\b/i, 'image count uses image rows');
 
 done_testing;

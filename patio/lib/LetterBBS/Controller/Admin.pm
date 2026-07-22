@@ -125,6 +125,7 @@ sub thread_list {
 
     for my $t (@$threads) {
         $t->{display_date} = _format_date($t->{updated_at});
+        $t->{status_label} = _admin_thread_status_label($t->{status});
     }
 
     my $html = $self->{template}->render('admin/threads.html',
@@ -292,6 +293,7 @@ sub settings {
     my $all = $self->{setting_m}->get_all();
     my $authkey = exists $all->{authkey} ? $all->{authkey} : ($self->{config}->get('authkey') || '0');
     my $image_upl = exists $all->{image_upl} ? $all->{image_upl} : ($self->{config}->get('image_upl') || '0');
+    my $use_captcha = exists $all->{use_captcha} ? $all->{use_captcha} : ($self->{config}->get('use_captcha') || '0');
     my $html = $self->{template}->render('admin/settings.html',
         $self->_admin_vars(),
         page_title => '設定',
@@ -301,6 +303,8 @@ sub settings {
         authkey_off  => ($authkey eq '1' ? 0 : 1),
         image_upl_on  => ($image_upl eq '1' ? 1 : 0),
         image_upl_off => ($image_upl eq '1' ? 0 : 1),
+        use_captcha_on  => ($use_captcha eq '1' ? 1 : 0),
+        use_captcha_off => ($use_captcha eq '1' ? 0 : 1),
         %$all,
     );
     $self->_output_html($html);
@@ -454,6 +458,11 @@ sub size_check {
         db_size    => sprintf("%.2f MB", $db_size / 1024 / 1024),
         upl_size   => sprintf("%.2f MB", $upl_size / 1024 / 1024),
         total_size => sprintf("%.2f MB", ($db_size + $upl_size) / 1024 / 1024),
+        active_threads   => $self->{thread_m}->count_by_status('active'),
+        archived_threads => $self->{thread_m}->count_by_status('archived'),
+        total_posts      => $self->{post_m}->count_all(),
+        total_users      => $self->{user_m}->count(),
+        total_images     => $self->{post_m}->count_images(),
     );
     $self->_output_html($html);
 }
