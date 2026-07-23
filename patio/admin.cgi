@@ -72,6 +72,18 @@ exit;
     my %_admin_params;
     my $_admin_parsed = 0;
 
+    sub _admin_store_param {
+        my ($key, $value) = @_;
+        if (exists $_admin_params{$key}) {
+            my $current = $_admin_params{$key};
+            $_admin_params{$key} = ref $current eq 'ARRAY'
+                ? [@$current, $value]
+                : [$current, $value];
+        } else {
+            $_admin_params{$key} = $value;
+        }
+    }
+
     sub _admin_parse_params {
         return if $_admin_parsed;
         $_admin_parsed = 1;
@@ -100,7 +112,7 @@ exit;
             next unless defined $key;
             $key = _admin_url_decode($key);
             $val = defined $val ? _admin_url_decode($val) : '';
-            $_admin_params{$key} = $val;
+            _admin_store_param($key, $val);
         }
     }
 
@@ -122,7 +134,7 @@ exit;
                 next unless defined $key;
                 $key = _admin_url_decode($key);
                 $val = defined $val ? _admin_url_decode($val) : '';
-                $_admin_params{$key} = $val;
+                _admin_store_param($key, $val);
             }
         }
 
@@ -137,14 +149,17 @@ exit;
             $body =~ s/\r?\n$// if defined $body;
             $body = '' unless defined $body;
             utf8::decode($body) unless utf8::is_utf8($body);
-            $_admin_params{$name} = $body;
+            _admin_store_param($name, $body);
         }
     }
 
     sub _admin_get_param {
         _admin_parse_params();
         my ($key) = @_;
-        return $_admin_params{$key};
+        my $value = $_admin_params{$key};
+        return wantarray
+            ? (ref $value eq 'ARRAY' ? @$value : defined $value ? ($value) : ())
+            : (ref $value eq 'ARRAY' ? $value->[-1] : $value);
     }
 
     sub _admin_url_decode {
@@ -166,7 +181,10 @@ package LetterBBS::AdminCGI;
 
 sub param {
     my ($self, $key) = @_;
-    return main::_admin_get_param($key) if defined $key;
+    return wantarray
+        ? main::_admin_get_param($key)
+        : scalar main::_admin_get_param($key)
+        if defined $key;
     main::_admin_parse_params();
     return keys %main::_admin_params;
 }

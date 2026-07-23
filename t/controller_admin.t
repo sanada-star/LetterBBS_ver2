@@ -26,7 +26,7 @@ binmode STDOUT, ':encoding(UTF-8)';
         my ($self, $name) = @_;
         my $value = $self->{params}{$name};
         return wantarray ? (ref $value eq 'ARRAY' ? @$value : defined $value ? ($value) : ())
-                         : (ref $value eq 'ARRAY' ? $value->[0] : $value);
+                         : (ref $value eq 'ARRAY' ? $value->[-1] : $value);
     }
 }
 
@@ -40,15 +40,56 @@ binmode STDOUT, ':encoding(UTF-8)';
 {
     package Local::AdminThreadModel;
 
-    sub new { bless {}, shift }
-    sub find {
-        return {
+    sub new {
+        my ($class, %args) = @_;
+        return bless {
+            records       => $args{records} || {
+                7 => {
+                    id         => 7,
+                    subject    => '件名',
+                    author     => '親',
+                    status     => 'active',
+                    post_count => 2,
+                    is_locked  => 0,
+                },
+                8 => {
+                    id         => 8,
+                    subject    => '件名2',
+                    author     => '親2',
+                    status     => 'active',
+                    post_count => 0,
+                    is_locked  => 0,
+                },
+            },
+            destroy_calls => [],
+            find_calls    => [],
+            update_calls  => [],
+            counts        => $args{counts} || { active => 3, archived => 2 },
+        }, $class;
+    }
+    sub list {
+        return [{
             id         => 7,
             subject    => '件名',
             author     => '親',
             status     => 'active',
             post_count => 2,
-        };
+            updated_at => '2026-07-20 12:13:14',
+        }];
+    }
+    sub count_by_status { $_[0]->{counts}{$_[1]} || 0 }
+    sub find {
+        my ($self, $id) = @_;
+        push @{$self->{find_calls}}, $id;
+        return $self->{records}{$id};
+    }
+    sub destroy {
+        my ($self, @args) = @_;
+        push @{$self->{destroy_calls}}, \@args;
+    }
+    sub update {
+        my ($self, @args) = @_;
+        push @{$self->{update_calls}}, \@args;
     }
 }
 
@@ -106,6 +147,24 @@ binmode STDOUT, ':encoding(UTF-8)';
         my ($self, @args) = @_;
         push @{$self->{deleted}}, \@args;
     }
+    sub count_all { 12 }
+    sub count_images { 3 }
+}
+
+{
+    package Local::AdminUserModel;
+    sub new {
+        my ($class, %args) = @_;
+        return bless { users => $args{users} || [] }, $class;
+    }
+    sub count { 4 }
+    sub list { $_[0]->{users} }
+}
+
+{
+    package Local::AdminSettingModel;
+    sub new { bless { values => $_[1] || {} }, $_[0] }
+    sub get_all { return { %{$_[0]->{values}} } }
 }
 
 {
@@ -131,10 +190,13 @@ sub make_controller {
             bbs_title  => '掲示板',
             cgi_url    => '/bbs.cgi',
             csrf_secret => 'test-secret',
+            db_file    => '/missing/letterbbs.db',
             upl_dir    => '/uploads',
         }),
         thread_m => $args{thread_m} || Local::AdminThreadModel->new,
         post_m   => $args{post_m} || Local::AdminPostModel->new,
+        user_m   => $args{user_m} || Local::AdminUserModel->new,
+        setting_m => $args{setting_m} || Local::AdminSettingModel->new,
         template => $template,
     }, 'LetterBBS::Controller::Admin';
 }
@@ -170,6 +232,196 @@ subtest 'thread_detail passes flattened thread and post values to template' => s
     is($deleted->{body_excerpt}, '削除済み本文', 'keeps deleted reply visible');
     is($deleted->{can_delete}, 0, 'deleted reply cannot be deleted');
     like($output, qr/Content-Type: text\/html/, 'outputs rendered response');
+};
+
+subtest 'thread list renders a localized status label' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $controller = make_controller(template => $template);
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->thread_list();
+    }
+    close $stdout or die $!;
+
+    is($template->{file}, 'admin/threads.html', 'renders thread list template');
+    my $threads = $template->{vars}{threads};
+    is($threads->[0]{status_label}, '公開中', 'passes localized thread status');
+    is($threads->[0]{post_count}, 2, 'keeps reply count');
+    is($threads->[0]{display_date}, '2026/07/20 12:13', 'formats activity date');
+};
+
+subtest 'thread list exposes active and archived navigation with status-aware pagination' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $controller = make_controller(
+        template => $template,
+        cgi => Local::AdminCGI->new({ status => 'archived', page => 2 }),
+        thread_m => Local::AdminThreadModel->new(
+            counts => { active => 3, archived => 120 },
+        ),
+    );
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->thread_list();
+    }
+    close $stdout or die $!;
+
+    my $vars = $template->{vars};
+    is($vars->{status}, 'archived', 'keeps the selected archive status');
+    is($vars->{is_active}, 0, 'marks active list as inactive');
+    is($vars->{is_archived}, 1, 'marks archived list as selected');
+    like(
+        $vars->{pagination},
+        qr{\?action=threads&amp;status=archived&amp;page=},
+        'keeps archived status in pagination links',
+    );
+
+    open my $fh, '<:encoding(UTF-8)', 'patio/tmpl/admin/threads.html' or die $!;
+    local $/;
+    my $template_source = <$fh>;
+    close $fh or die $!;
+    like($template_source, qr{status=active}, 'template links to active threads');
+    like($template_source, qr{status=archived}, 'template links to archived threads');
+    like($template_source, qr{name="status" value="<!-- var:status -->"},
+        'bulk form submits the current status');
+    like($template_source, qr{name="exec" value="restore"},
+        'archived list provides a restore action');
+};
+
+subtest 'member list provides rank, status, and registration date labels' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $user_m = Local::AdminUserModel->new(users => [
+        { id => 1, rank => 2, is_active => 1, created_at => '2026-07-23 10:11:12' },
+        { id => 2, rank => 1, is_active => 0, created_at => '2026-07-22 09:08:07' },
+        { id => 3, rank => 9, is_active => 7 },
+        { id => 4 },
+    ]);
+    my $controller = make_controller(template => $template, user_m => $user_m);
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->member_list();
+    }
+    close $stdout or die $!;
+
+    my $users = $template->{vars}{users};
+    is_deeply(
+        [map { [$_->{rank_label}, $_->{status_label}, $_->{display_date}] } @$users],
+        [
+            ['書込可', '有効', '2026/07/23 10:11'],
+            ['閲覧のみ', '無効', '2026/07/22 09:08'],
+            ['9', '7', ''],
+            ['未設定', '未設定', ''],
+        ],
+        'formats known values and preserves explicit unknown values',
+    );
+};
+
+subtest 'bulk thread actions normalize and process every selected id once' => sub {
+    my $csrf_token = LetterBBS::Auth::generate_csrf_token('admin-session', 'test-secret');
+
+    for my $case (
+        ['delete',      'destroy_calls', [[7, '/uploads'], [8, '/uploads']]],
+        ['toggle_lock', 'update_calls',  [[7, is_locked => 1], [8, is_locked => 1]]],
+        ['archive',     'update_calls',  [[7, status => 'archived'], [8, status => 'archived']]],
+        ['restore',     'update_calls',  [[7, status => 'active'], [8, status => 'active']]],
+    ) {
+        my ($action, $record_key, $expected) = @$case;
+        my $thread_m = Local::AdminThreadModel->new;
+        my $cgi = Local::AdminCGI->new({
+            exec       => $action,
+            ids        => [7, 8, 8, 'bad', 0],
+            status     => 'archived',
+            csrf_token => $csrf_token,
+        });
+        my $controller = make_controller(cgi => $cgi, thread_m => $thread_m);
+        my $output = '';
+        open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+        {
+            local *STDOUT = $stdout;
+            $controller->thread_exec();
+        }
+        close $stdout or die $!;
+
+        is_deeply($thread_m->{$record_key}, $expected,
+            "$action processes normalized unique IDs");
+        like(
+            $output,
+            qr{Location: /admin\.cgi\?action=threads&status=archived},
+            "$action preserves the selected list status",
+        );
+    }
+
+    my $thread_m = Local::AdminThreadModel->new;
+    my $controller = make_controller(
+        thread_m => $thread_m,
+        cgi => Local::AdminCGI->new({
+            exec       => 'delete',
+            thread_id  => 7,
+            csrf_token => $csrf_token,
+        }),
+    );
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->thread_exec();
+    }
+    close $stdout or die $!;
+    is_deeply($thread_m->{destroy_calls}, [[7, '/uploads']],
+        'single thread_id remains supported');
+};
+
+subtest 'size check renders capacity and all requested record counts' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $controller = make_controller(template => $template);
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->size_check();
+    }
+    close $stdout or die $!;
+
+    my $vars = $template->{vars};
+    is($vars->{active_threads}, 3, 'counts active threads');
+    is($vars->{archived_threads}, 2, 'counts archived threads');
+    is($vars->{total_posts}, 12, 'counts all post records');
+    is($vars->{total_users}, 4, 'counts users');
+    is($vars->{total_images}, 3, 'counts image records');
+};
+
+subtest 'settings renders the current CAPTCHA selection' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $controller = make_controller(
+        template => $template,
+        setting_m => Local::AdminSettingModel->new({ use_captcha => '1' }),
+    );
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->settings();
+    }
+    close $stdout or die $!;
+
+    is($template->{vars}{use_captcha_on}, 1, 'CAPTCHA enabled option is selected');
+    is($template->{vars}{use_captcha_off}, 0, 'CAPTCHA disabled option is not selected');
+};
+
+subtest 'settings template exposes the CAPTCHA setting field' => sub {
+    open my $fh, '<:encoding(UTF-8)', 'patio/tmpl/admin/settings.html' or die $!;
+    local $/;
+    my $template = <$fh>;
+    close $fh or die $!;
+
+    like($template, qr{<select name="use_captcha">}, 'CAPTCHA select is present');
+    like($template, qr{if:use_captcha_on}, 'enabled selection flag is used');
+    like($template, qr{if:use_captcha_off}, 'disabled selection flag is used');
 };
 
 subtest 'delete_posts only soft-deletes active replies belonging to the thread' => sub {

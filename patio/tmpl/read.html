@@ -1,14 +1,18 @@
 <div class="bbs-navi">
   <div>
     <a href="<!-- var:cgi_url -->">&#8617; 一覧に戻る</a> |
+    <!-- unless:is_locked -->
     <a href="#resform">&#9993; 返信する</a> |
+    <!-- /unless:is_locked -->
     <a
       href="<!-- var:cgi_url -->?mode=archive&id=<!-- raw:thread_id -->"
       target="_blank"
       >&#128230; 思い出を保存</a
     >
   </div>
+  <!-- unless:is_locked -->
   <a href="#resform" class="jump-btn">&#9660; 最下部へ</a>
+  <!-- /unless:is_locked -->
 </div>
 
 <!-- スレッド親記事 -->

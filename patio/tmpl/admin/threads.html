@@ -22,14 +22,25 @@
     <div class="admin-alert admin-alert-success"><!-- var:message --></div>
     <!-- /if:message -->
 
+    <div style="display:flex; gap:var(--sp-sm); margin-bottom:var(--sp-md);">
+      <a href="<!-- var:admin_url -->?action=threads&amp;status=active" class="btn-admin btn-admin-outline">現行スレッド</a>
+      <a href="<!-- var:admin_url -->?action=threads&amp;status=archived" class="btn-admin btn-admin-outline">過去ログ</a>
+    </div>
+
     <form action="<!-- var:admin_url -->" method="post">
       <input type="hidden" name="action" value="thread_exec">
       <input type="hidden" name="csrf_token" value="<!-- var:csrf_token -->">
+      <input type="hidden" name="status" value="<!-- var:status -->">
 
       <div style="display:flex; gap:var(--sp-sm); margin-bottom:var(--sp-md);">
         <button type="submit" name="exec" value="delete" class="btn-admin btn-admin-danger" onclick="return confirm('選択したスレッドを削除しますか？')">削除</button>
+        <!-- if:is_active -->
         <button type="submit" name="exec" value="toggle_lock" class="btn-admin btn-admin-outline">管理者コメント機能切替</button>
         <button type="submit" name="exec" value="archive" class="btn-admin btn-admin-outline">過去ログ化</button>
+        <!-- /if:is_active -->
+        <!-- if:is_archived -->
+        <button type="submit" name="exec" value="restore" class="btn-admin btn-admin-outline">復元</button>
+        <!-- /if:is_archived -->
       </div>
 
       <table class="admin-table">

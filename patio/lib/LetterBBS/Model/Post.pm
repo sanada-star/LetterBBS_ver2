@@ -68,6 +68,18 @@ sub count_replies {
     return $count || 0;
 }
 
+sub count_all {
+    my ($self) = @_;
+    my ($count) = $self->dbh->selectrow_array("SELECT COUNT(*) FROM posts");
+    return $count || 0;
+}
+
+sub count_images {
+    my ($self) = @_;
+    my ($count) = $self->dbh->selectrow_array("SELECT COUNT(*) FROM post_images");
+    return $count || 0;
+}
+
 # 投稿作成
 sub create {
     my ($self, %data) = @_;

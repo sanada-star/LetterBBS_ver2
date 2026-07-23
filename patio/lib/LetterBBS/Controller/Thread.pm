@@ -222,6 +222,8 @@ sub post {
 
     # DB操作（トランザクション）
     my $target_thread_id;
+    my $upload_error = '';
+    my @uploaded_files;
     eval {
         $self->{db}->begin_transaction();
 
@@ -266,9 +268,10 @@ sub post {
                 my $result = $uploader->process($cgi, "file$slot", $target_thread_id, $slot);
                 next unless $result;
                 if ($result->{error}) {
-                    $self->{db}->rollback();
-                    return $self->_error($result->{error});
+                    $upload_error = $result->{error};
+                    die "upload validation failed\n";
                 }
+                push @uploaded_files, $result->{filename};
                 $self->{post_m}->add_image(
                     post_id   => $post_id,
                     slot      => $slot,
@@ -302,8 +305,16 @@ sub post {
         $self->{db}->commit();
     };
     if ($@) {
+        my $error = $@;
         eval { $self->{db}->rollback() };
-        warn "[LetterBBS] post error: $@";
+        if (@uploaded_files) {
+            my $cleanup = LetterBBS::Upload->new(
+                upl_dir => $self->{config}->get('upl_dir'),
+            );
+            $cleanup->delete_file($_) for @uploaded_files;
+        }
+        return $self->_error($upload_error) if $upload_error ne '';
+        warn "[LetterBBS] post error: $error";
         return $self->_error('投稿の保存に失敗しました。もう一度お試しください。');
     }
 
@@ -424,7 +435,11 @@ sub edit_exec {
             "SELECT COUNT(*) FROM post_images pi JOIN posts p ON p.id = pi.post_id WHERE p.thread_id = ? AND p.is_deleted = 0",
             undef, $thread_id
         );
-        $self->{thread_m}->update($thread_id, has_image => ($remaining_images ? 1 : 0));
+        $self->{thread_m}->update(
+            $thread_id,
+            has_image      => ($remaining_images ? 1 : 0),
+            touch_activity => 0,
+        );
     }
 
     my $escaped_body = LetterBBS::Sanitize::html_escape($body);
