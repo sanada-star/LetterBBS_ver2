@@ -122,19 +122,25 @@ sub thread_list {
 
     my $threads = $self->{thread_m}->list(status => $status, page => $page, per_page => 50);
     my $total   = $self->{thread_m}->count_by_status($status);
+    my $total_pages = int(($total + 49) / 50);
 
     for my $t (@$threads) {
         $t->{display_date} = _format_date($t->{updated_at});
         $t->{status_label} = _admin_thread_status_label($t->{status});
     }
 
+    my $base_url = ($self->{config}->get('admin_url') || '')
+        . '?action=threads&amp;status=' . $status;
     my $html = $self->{template}->render('admin/threads.html',
         $self->_admin_vars(),
         page_title => 'スレッド管理',
         threads    => $threads,
         status     => $status,
+        is_active  => $status eq 'active' ? 1 : 0,
+        is_archived => $status eq 'archived' ? 1 : 0,
         page       => $page,
         total      => $total,
+        pagination => _admin_pagination($page, $total_pages, $base_url),
     );
     $self->_output_html($html);
 }
@@ -184,12 +190,12 @@ sub thread_exec {
     }
 
     my $action = $cgi->param('exec') || '';
-    my $id     = LetterBBS::Sanitize::to_uint($cgi->param('thread_id') || $cgi->param('ids'));
-    
-    # 配列から最初の値を取る（複数選択時は全てに適用）
-    my @ids = $cgi->param('ids');
+    my $id = LetterBBS::Sanitize::to_uint($cgi->param('thread_id'));
+    my @ids = _admin_param_ids($cgi, 'ids');
     @ids = ($id) if !@ids && $id;
-    my $redirect = '?action=threads';
+    my $status = $cgi->param('status') || 'active';
+    $status = 'active' unless $status =~ /^(active|archived)$/;
+    my $redirect = '?action=threads&status=' . $status;
 
     if ($action eq 'delete') {
         for my $target_id (@ids) {
@@ -219,16 +225,14 @@ sub thread_exec {
             $self->{thread_m}->update($target_id, status => 'active');
         }
     } elsif ($action eq 'delete_posts') {
-        my @post_ids = $cgi->param('post_ids');
+        my @post_ids = _admin_param_ids($cgi, 'post_ids');
         for my $post_id (@post_ids) {
-            my $clean_id = LetterBBS::Sanitize::to_uint($post_id);
-            next unless $clean_id;
-            my $post = $self->{post_m}->find($clean_id);
+            my $post = $self->{post_m}->find($post_id);
             next unless $post;
             next unless $post->{thread_id} == $id;
             next unless $post->{seq_no} > 0;
             next if $post->{is_deleted};
-            $self->{post_m}->soft_delete($clean_id, $self->{config}->get('upl_dir'));
+            $self->{post_m}->soft_delete($post_id, $self->{config}->get('upl_dir'));
         }
         $redirect = '?action=thread_detail&id=' . $id;
     }
@@ -245,6 +249,11 @@ sub member_list {
     return $self->_require_login() unless $self->{session}->get('admin_login');
 
     my $users = $self->{user_m}->list();
+    for my $user (@$users) {
+        $user->{rank_label} = _admin_user_rank_label($user->{rank});
+        $user->{status_label} = _admin_user_status_label($user->{is_active});
+        $user->{display_date} = _format_date($user->{created_at});
+    }
     my $html = $self->{template}->render('admin/members.html',
         $self->_admin_vars(),
         page_title => '会員管理',
@@ -525,6 +534,66 @@ sub _admin_thread_status_label {
         deleted  => '削除済み',
     );
     return exists $labels{$status} ? $labels{$status} : $status;
+}
+
+sub _admin_user_rank_label {
+    my ($rank) = @_;
+    return '未設定' unless defined $rank;
+    return '閲覧のみ' if $rank eq '1';
+    return '書込可' if $rank eq '2';
+    return "$rank";
+}
+
+sub _admin_user_status_label {
+    my ($status) = @_;
+    return '未設定' unless defined $status;
+    return '無効' if $status eq '0';
+    return '有効' if $status eq '1';
+    return "$status";
+}
+
+sub _admin_param_ids {
+    my ($cgi, $name) = @_;
+    my %seen;
+    return grep {
+        $_ && !$seen{$_}++
+    } map {
+        LetterBBS::Sanitize::to_uint($_)
+    } $cgi->param($name);
+}
+
+sub _admin_pagination {
+    my ($current, $total, $base_url) = @_;
+    return '' if $total <= 1;
+
+    my $html = '<div class="pagination">';
+    if ($current > 1) {
+        $html .= sprintf(
+            '<a href="%s&amp;page=%d" class="page-link">&laquo; 前</a>',
+            $base_url, $current - 1,
+        );
+    }
+
+    my $start = ($current - 3 > 1) ? $current - 3 : 1;
+    my $end = ($current + 3 < $total) ? $current + 3 : $total;
+    for my $page ($start .. $end) {
+        if ($page == $current) {
+            $html .= sprintf('<span class="page-current">%d</span>', $page);
+        } else {
+            $html .= sprintf(
+                '<a href="%s&amp;page=%d" class="page-link">%d</a>',
+                $base_url, $page, $page,
+            );
+        }
+    }
+
+    if ($current < $total) {
+        $html .= sprintf(
+            '<a href="%s&amp;page=%d" class="page-link">次 &raquo;</a>',
+            $base_url, $current + 1,
+        );
+    }
+    return $html . '</div>';
 }
 
 1;

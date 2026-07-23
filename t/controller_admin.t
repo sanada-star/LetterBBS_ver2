@@ -26,7 +26,7 @@ binmode STDOUT, ':encoding(UTF-8)';
         my ($self, $name) = @_;
         my $value = $self->{params}{$name};
         return wantarray ? (ref $value eq 'ARRAY' ? @$value : defined $value ? ($value) : ())
-                         : (ref $value eq 'ARRAY' ? $value->[0] : $value);
+                         : (ref $value eq 'ARRAY' ? $value->[-1] : $value);
     }
 }
 
@@ -40,7 +40,33 @@ binmode STDOUT, ':encoding(UTF-8)';
 {
     package Local::AdminThreadModel;
 
-    sub new { bless {}, shift }
+    sub new {
+        my ($class, %args) = @_;
+        return bless {
+            records       => $args{records} || {
+                7 => {
+                    id         => 7,
+                    subject    => '件名',
+                    author     => '親',
+                    status     => 'active',
+                    post_count => 2,
+                    is_locked  => 0,
+                },
+                8 => {
+                    id         => 8,
+                    subject    => '件名2',
+                    author     => '親2',
+                    status     => 'active',
+                    post_count => 0,
+                    is_locked  => 0,
+                },
+            },
+            destroy_calls => [],
+            find_calls    => [],
+            update_calls  => [],
+            counts        => $args{counts} || { active => 3, archived => 2 },
+        }, $class;
+    }
     sub list {
         return [{
             id         => 7,
@@ -51,15 +77,19 @@ binmode STDOUT, ':encoding(UTF-8)';
             updated_at => '2026-07-20 12:13:14',
         }];
     }
-    sub count_by_status { return $_[1] eq 'archived' ? 2 : 3 }
+    sub count_by_status { $_[0]->{counts}{$_[1]} || 0 }
     sub find {
-        return {
-            id         => 7,
-            subject    => '件名',
-            author     => '親',
-            status     => 'active',
-            post_count => 2,
-        };
+        my ($self, $id) = @_;
+        push @{$self->{find_calls}}, $id;
+        return $self->{records}{$id};
+    }
+    sub destroy {
+        my ($self, @args) = @_;
+        push @{$self->{destroy_calls}}, \@args;
+    }
+    sub update {
+        my ($self, @args) = @_;
+        push @{$self->{update_calls}}, \@args;
     }
 }
 
@@ -123,8 +153,12 @@ binmode STDOUT, ':encoding(UTF-8)';
 
 {
     package Local::AdminUserModel;
-    sub new { bless {}, shift }
+    sub new {
+        my ($class, %args) = @_;
+        return bless { users => $args{users} || [] }, $class;
+    }
     sub count { 4 }
+    sub list { $_[0]->{users} }
 }
 
 {
@@ -216,6 +250,130 @@ subtest 'thread list renders a localized status label' => sub {
     is($threads->[0]{status_label}, '公開中', 'passes localized thread status');
     is($threads->[0]{post_count}, 2, 'keeps reply count');
     is($threads->[0]{display_date}, '2026/07/20 12:13', 'formats activity date');
+};
+
+subtest 'thread list exposes active and archived navigation with status-aware pagination' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $controller = make_controller(
+        template => $template,
+        cgi => Local::AdminCGI->new({ status => 'archived', page => 2 }),
+        thread_m => Local::AdminThreadModel->new(
+            counts => { active => 3, archived => 120 },
+        ),
+    );
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->thread_list();
+    }
+    close $stdout or die $!;
+
+    my $vars = $template->{vars};
+    is($vars->{status}, 'archived', 'keeps the selected archive status');
+    is($vars->{is_active}, 0, 'marks active list as inactive');
+    is($vars->{is_archived}, 1, 'marks archived list as selected');
+    like(
+        $vars->{pagination},
+        qr{\?action=threads&amp;status=archived&amp;page=},
+        'keeps archived status in pagination links',
+    );
+
+    open my $fh, '<:encoding(UTF-8)', 'patio/tmpl/admin/threads.html' or die $!;
+    local $/;
+    my $template_source = <$fh>;
+    close $fh or die $!;
+    like($template_source, qr{status=active}, 'template links to active threads');
+    like($template_source, qr{status=archived}, 'template links to archived threads');
+    like($template_source, qr{name="status" value="<!-- var:status -->"},
+        'bulk form submits the current status');
+    like($template_source, qr{name="exec" value="restore"},
+        'archived list provides a restore action');
+};
+
+subtest 'member list provides rank, status, and registration date labels' => sub {
+    my $template = Local::AdminTemplate->new;
+    my $user_m = Local::AdminUserModel->new(users => [
+        { id => 1, rank => 2, is_active => 1, created_at => '2026-07-23 10:11:12' },
+        { id => 2, rank => 1, is_active => 0, created_at => '2026-07-22 09:08:07' },
+        { id => 3, rank => 9, is_active => 7 },
+        { id => 4 },
+    ]);
+    my $controller = make_controller(template => $template, user_m => $user_m);
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->member_list();
+    }
+    close $stdout or die $!;
+
+    my $users = $template->{vars}{users};
+    is_deeply(
+        [map { [$_->{rank_label}, $_->{status_label}, $_->{display_date}] } @$users],
+        [
+            ['書込可', '有効', '2026/07/23 10:11'],
+            ['閲覧のみ', '無効', '2026/07/22 09:08'],
+            ['9', '7', ''],
+            ['未設定', '未設定', ''],
+        ],
+        'formats known values and preserves explicit unknown values',
+    );
+};
+
+subtest 'bulk thread actions normalize and process every selected id once' => sub {
+    my $csrf_token = LetterBBS::Auth::generate_csrf_token('admin-session', 'test-secret');
+
+    for my $case (
+        ['delete',      'destroy_calls', [[7, '/uploads'], [8, '/uploads']]],
+        ['toggle_lock', 'update_calls',  [[7, is_locked => 1], [8, is_locked => 1]]],
+        ['archive',     'update_calls',  [[7, status => 'archived'], [8, status => 'archived']]],
+        ['restore',     'update_calls',  [[7, status => 'active'], [8, status => 'active']]],
+    ) {
+        my ($action, $record_key, $expected) = @$case;
+        my $thread_m = Local::AdminThreadModel->new;
+        my $cgi = Local::AdminCGI->new({
+            exec       => $action,
+            ids        => [7, 8, 8, 'bad', 0],
+            status     => 'archived',
+            csrf_token => $csrf_token,
+        });
+        my $controller = make_controller(cgi => $cgi, thread_m => $thread_m);
+        my $output = '';
+        open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+        {
+            local *STDOUT = $stdout;
+            $controller->thread_exec();
+        }
+        close $stdout or die $!;
+
+        is_deeply($thread_m->{$record_key}, $expected,
+            "$action processes normalized unique IDs");
+        like(
+            $output,
+            qr{Location: /admin\.cgi\?action=threads&status=archived},
+            "$action preserves the selected list status",
+        );
+    }
+
+    my $thread_m = Local::AdminThreadModel->new;
+    my $controller = make_controller(
+        thread_m => $thread_m,
+        cgi => Local::AdminCGI->new({
+            exec       => 'delete',
+            thread_id  => 7,
+            csrf_token => $csrf_token,
+        }),
+    );
+    my $output = '';
+    open my $stdout, '>:encoding(UTF-8)', \$output or die $!;
+    {
+        local *STDOUT = $stdout;
+        $controller->thread_exec();
+    }
+    close $stdout or die $!;
+    is_deeply($thread_m->{destroy_calls}, [[7, '/uploads']],
+        'single thread_id remains supported');
 };
 
 subtest 'size check renders capacity and all requested record counts' => sub {
